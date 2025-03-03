@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 // Connect to the 'waitlist' database with the 'emails' collection
-mongoose.connect('mongodb+srv://damirzuy11:damir2280@arve-waitlist.h37zw.mongodb.net/waitlist?retryWrites=true&w=majority')
+mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("Connected to MongoDB database 'waitlist'");
     })
