@@ -38,14 +38,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // Update button state based on input value
         joinInput.addEventListener("input", () => updateButtonState(joinInput, joinBtn));
         updateButtonState(joinInput, joinBtn); // Initial state
-        const API_BASE_URL = "https://api.arve.site";
         // Handle form submission for each input/button
         joinBtn.addEventListener("click", async () => {
             const email = joinInput.value;
             if (!isValidEmail(email)) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/join-waitlist`, {
+                const response = await fetch('https://arve.onrender.com/api/join-waitlist', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email }),
@@ -135,7 +134,6 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener('DOMContentLoaded', () => {
     const joinBtn = document.querySelector('.join_btn');
     const emailInput = document.querySelector('.join_input');
-    const API_BASE_URL = "https://api.arve.site";
 
     joinBtn.addEventListener('click', async () => {
         const email = emailInput.value.trim();
@@ -146,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
-            const response = await fetch(`${API_BASE_URL}/api/join-waitlist`, {
+            const response = await fetch('https://arve.onrender.com/api/join-waitlist', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email }),
