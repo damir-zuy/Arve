@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!isValidEmail(email)) return;
 
             try {
-                const response = await fetch("http://localhost:5000/join-waitlist", {
+                const response = await fetch("http://arve.site:5000/join-waitlist", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email }),
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/join-waitlist', {
+            const response = await fetch('http://arve.site:5000/api/join-waitlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
