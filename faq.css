@@ -47,6 +47,7 @@ a{color: var(--green);text-decoration: none;}
     max-width: 1200px;
     margin: 0 auto;
     position: relative;
+    width: 100%;
 
     display: flex;
     flex-direction: column;
@@ -217,6 +218,7 @@ a{color: var(--green);text-decoration: none;}
     /* height: 7vh; */
     background-color: var(--light_green);
     color: var(--green);
+    width: 100%;
 }
 .footer .navlink{
     color: var(--green) !important;
