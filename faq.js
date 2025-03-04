@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
         button.style.color = isValid ? "var(--orange)" : "#DBD3D3";
         button.style.pointerEvents = isValid ? "auto" : "none";
         button.style.opacity = "1";
-        button.style.transform = isValid ? "scale(1.5)" : "scale(1)";
+        button.style.transform = isValid ? "translateX(10px) scale(1.5)" : "translateX(0)";
         button.style.transition = "0.15s";
     }
 
