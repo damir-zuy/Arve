@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('https://arve.site:5000/api/join-waitlist', {
+            const response = await fetch('https://arve.site:5000/join-waitlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
