@@ -484,6 +484,9 @@ a{color: var(--green);text-decoration: none;}
         margin: 0 auto;
         position: relative;
     }
+    section{
+        height: fit-content;
+    }
     .header{
         position: absolute;
     }
