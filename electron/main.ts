@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { autoUpdater } from 'electron-updater';
+import { autoUpdater } from 'electron-updater'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -18,11 +18,11 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let win: BrowserWindow | null = null
 
+// Function to create the window
 function createWindow(bounds?: Electron.Rectangle) {
   const opts: Electron.BrowserWindowConstructorOptions = {
     width: bounds?.width ?? 1600,
     height: bounds?.height ?? 1080,
-    // preserve last position if available
     ...(bounds && { x: bounds.x, y: bounds.y }),
     icon: path.join(__dirname, '..', 'src', 'assets', 'icons', 'arve_icon.ico'), // Windows
     titleBarStyle: 'hidden',
@@ -54,7 +54,7 @@ function createWindow(bounds?: Electron.Rectangle) {
   })
 
   // forward maximize/unmaximize events
-  win.on('maximize',   () => win?.webContents.send('window-state-changed', true))
+  win.on('maximize', () => win?.webContents.send('window-state-changed', true))
   win.on('unmaximize', () => win?.webContents.send('window-state-changed', false))
 }
 
@@ -71,7 +71,7 @@ nativeTheme.on('updated', () => {
 ipcMain.on('minimize', () => win?.minimize())
 ipcMain.on('maximize', () => {
   if (win?.isMaximized()) win.unmaximize()
-  else                   win?.maximize()
+  else win?.maximize()
 })
 ipcMain.on('close', () => win?.close())
 
@@ -89,21 +89,33 @@ app.on('activate', () => {
   }
 })
 
+// When the app is ready
 app.whenReady().then(() => {
-  createWindow();
+  createWindow()
 
   // Check for updates when app is ready
-  autoUpdater.checkForUpdatesAndNotify();
+  autoUpdater.checkForUpdatesAndNotify()
 
+  // Listen for update events
   autoUpdater.on('update-available', () => {
-    win?.webContents.send('update_available');
-  });
+    win?.webContents.send('update_available')  // Notify renderer about available update
+  })
 
   autoUpdater.on('update-downloaded', () => {
-    win?.webContents.send('update_downloaded');
-  });
-});
+    win?.webContents.send('update_downloaded')  // Notify renderer about downloaded update
+  })
+})
 
+// IPC handler to restart the app and install the update
 ipcMain.on('restart_app', () => {
-  autoUpdater.quitAndInstall(); // Restart and install the update
-});
+  autoUpdater.quitAndInstall()  // Restart and install the update
+})
+
+// Set up the feed URL (GitHub releases, adjust accordingly)
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'your-github-username',
+  repo: 'your-repo-name',
+  // optional: specify the URL of your release feed if it's not on GitHub
+  // url: 'https://your-server.com/updates'
+})
