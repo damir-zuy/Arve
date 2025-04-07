@@ -13,6 +13,14 @@ import NotificationDisplay from './NotificationDisplay';
 import './App.css';
 import './styles/theme.css';
 
+declare global {
+    interface Window {
+      require: any;
+    }
+  }
+  
+  const { ipcRenderer } = window.require('electron');
+
 const App: React.FC = () => {
     const isLoggedIn = !!localStorage.getItem('token');
     const navigate = useNavigate();
@@ -23,6 +31,20 @@ const App: React.FC = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<'Day' | 'Month' | 'Year'>('Month');
+
+    useEffect(() => {
+        ipcRenderer.on('update_available', () => {
+          alert('A new update is available. Downloading now...');
+        });
+    
+        ipcRenderer.on('update_downloaded', () => {
+          const confirmed = confirm('Update downloaded. Restart now to apply?');
+          if (confirmed) {
+            ipcRenderer.send('restart_app');
+          }
+        });
+      }, []);
+    
 
     useEffect(() => {
         const handleDateChange = (e: CustomEvent) => {

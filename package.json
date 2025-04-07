@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "push": "cross-var git add . && git commit -m \"$MSG\" && git push"
   },
   "main": "dist-electron/main.js",
   "build": {
@@ -28,7 +29,7 @@
       ],
       "publish": {
         "provider": "github",
-        "repo": "Arve-app", 
+        "repo": "Arve-app",
         "owner": "damir-zuy",
         "releaseType": "release"
       }
@@ -40,7 +41,7 @@
       ],
       "publish": {
         "provider": "github",
-        "repo": "Arve-app", 
+        "repo": "Arve-app",
         "owner": "damir-zuy",
         "releaseType": "release"
       }
@@ -82,6 +83,7 @@
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
+    "cross-var": "^1.1.0",
     "electron": "^30.0.1",
     "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",

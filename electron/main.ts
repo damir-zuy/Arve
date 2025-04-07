@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { autoUpdater } from 'electron-updater';
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -89,5 +90,20 @@ app.on('activate', () => {
 })
 
 app.whenReady().then(() => {
-  createWindow()
-})
+  createWindow();
+
+  // Check for updates when app is ready
+  autoUpdater.checkForUpdatesAndNotify();
+
+  autoUpdater.on('update-available', () => {
+    win?.webContents.send('update_available');
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    win?.webContents.send('update_downloaded');
+  });
+});
+
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall(); // Restart and install the update
+});
