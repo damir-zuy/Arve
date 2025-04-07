@@ -1,0 +1,279 @@
+.note-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Note modal ------------------------------------------------------------ */
+.note-modal {
+  background-color: var(--white);
+  border-radius: 15px;
+  width: 687px;
+  height: 850px;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+  padding: 10px;
+  position: relative;
+  z-index: 1000;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.2s;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  position: absolute;
+  right: 20px;
+  top: 20px;  
+}
+
+.close-button:hover {
+  color: var(--black);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.note-modal-content {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-modal-content textarea {
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  resize: none;
+  font-family: 'Chivo Mono', 'Arial', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: white;
+  color: var(--black);
+  transition: border-color 0.2s;
+}
+
+.note-modal-content textarea:focus {
+  outline: none;
+}
+
+.note-modal-content textarea::placeholder {
+  color: #aaa;
+}
+/* Footer ------------------------------------------------------------ */
+.note-modal-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.cancel-button,
+.save-note-button {
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.cancel-button {
+  background-color: transparent;
+  color: #B700FF70;
+  border: 1px solid #B700FF15;
+}
+
+.cancel-button:hover {
+  background-color: #B700FF15;
+  color: #B700FF80;
+}
+
+.save-note-button {
+  background-color: #B700FF15;
+  color: var(--pink);
+  border: 1px solid #B700FF30;
+}
+
+.save-note-button:hover {
+  background-color: #B700FF30;
+}
+
+.save-note-button:active {
+  transform: scale(0.98);
+}
+
+/* Drop area ------------------------------------------------------------ */
+
+.drop-area {
+  font-family: 'Chivo Mono', monospace;
+  border: 2px dashed #E298FF;
+  background-color: #B700FF15;
+  color: var(--pink);
+  font-size: 16px;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  transition: background-color 0.2s;
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.drop-area.dragging {
+  background-color: #B700FF30;
+}
+
+.image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  width: 100%; /* Ensure the image preview container takes full width */
+  transition: height 0.3s ease; /* Smooth transition for height */
+}
+
+.image-container {
+  position: relative;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  flex: 1 1 auto; /* Allow the image container to grow and shrink */
+  transition: opacity 0.3s ease; /* Smooth transition for opacity */
+}
+
+.image-preview img {
+  height: 55px; /* Set fixed height */
+  width: 100%; /* Stretch to full width */
+  object-fit: cover; /* Maintain aspect ratio and cover the container */
+  border-radius: 5px;
+  outline: 2px solid #B700FF30;
+}
+
+.remove-image {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  background-color: #B700FF10;
+  transition: all 0.2s;
+  padding: 5px 5px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.remove-image:hover {
+  color: var(--pink);
+  background-color: #B700FF30;
+  scale: 1.2;
+}
+
+.upload-link {
+  color: var(--pink);
+  text-decoration: underline;
+  font-size: 14px;
+  color: #B700FF;
+}
+.upload-link:focus-visible{
+  outline: none;
+  border: none;
+}
+
+.upload-link-text {
+  font-size: 14px;
+  line-height: 1;
+  color: #B700FF80;
+}
+
+.full-screen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9); /* Darker background for better visibility */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20000; /* Ensure it is above the modal */
+}
+
+.full-screen-image {
+  max-width: 90%; /* Set max width to 90% of the screen */
+  max-height: 90%; /* Set max height to 90% of the screen */
+  object-fit: contain; /* Maintain aspect ratio */
+}
+
+.close-fullscreen-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #B700FF30;
+  border: none;
+  color: white;
+  font-size: 36px;
+  cursor: pointer;
+  z-index: 5000;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fade-out {
+  opacity: 0; /* Fade out effect */
+  transform: scale(0.9); /* Shrink the image */
+  transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transition for both opacity and scale */
+}
+
+.header {
+  z-index: 100; /* Set a lower z-index than the full-screen overlay */
+  position: relative; /* Ensure it has a positioning context */
+}

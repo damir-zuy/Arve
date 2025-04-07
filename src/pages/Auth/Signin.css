@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@300;400;500;700&family=Handjet:wght@300;400;500;700&display=swap');
+
+:root {
+  --green: #72BF78;
+  --red: #D80F0F;
+  --black: #111111;
+  --white: #ffffff;
+  --beige: #FAF7F0;
+  --dark-beige: #ECE8DE;
+  --pink: #B700FF;
+}
+.sign_in_bg{
+  background-color: #111111 !important;
+  background-image: url('../../assets/sign_in_bg.png') !important;
+  background-size: cover ;
+  background-position: center ;
+  background-repeat: no-repeat ;
+  object-fit: cover ;
+  width: 100%;
+  height: 100%;
+}
+
+.signin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #ffffff;
+}
+.signin-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.logo_auth{
+  background: transparent;
+  border: 1px solid #ffffff50;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.logo_auth *{
+  fill: var(--white);
+  transition: fill 0.2s ease;
+}
+
+.logo_auth:hover{
+  background-color: #ffffff;
+}
+.logo_auth:hover *{
+  fill: var(--black);
+}
+
+
+.logo_title{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--white);
+  margin-bottom: 50px;
+  
+}
+.logo_title h2{
+  font-weight: 300;
+  font-size: 36px;
+  line-height: 32px;
+}
+.signin-form{
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 500px;
+  background-color: #B700FF10;
+  padding: 30px 20px 40px 20px;
+  border-radius: 10px;
+  border: 1px solid #B700FF20;
+}
+.input_auth-container{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.input-label{
+  font-size: 16px;
+  font-weight: 600;
+}
+.input-field_sign_in{
+  font-family: 'Chivo Mono', monospace;
+  font-size: 16px;
+  width: 100%;
+  height: 55px;
+  background-color: #190E1D;
+  border-radius: 10px;
+  border: 1px solid #B700FF35;
+  padding: 0 20px;
+  color: #ffffff;
+}
+.input-field_sign_in:focus{
+  outline: none;
+  background-color: #1B101F;
+}
+
+.lable_forgot-password{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+}
+.forgot-password{
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pink);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.button_auth_in{
+  font-family: 'Chivo Mono', monospace;
+  font-size: 24px;
+  background-color: var(--green);
+  border-radius: 10px;
+  border: 2px solid #11111150;
+  color: var(--white);
+  padding: 7px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+.button_auth_in:hover{
+  filter: brightness(1.1);
+}
+.auth_footer{
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 500px;
+  background-color: #B700FF05;
+  height: 60px;
+  border-radius: 10px;
+  border: 1px solid #B700FF15;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+}
+.link_auth_footer{
+  color: var(--pink);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.85); opacity: 0; }
+  65% { transform: scale(1.01); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounceOut {
+  0% { transform: scale(1); opacity: 1; }
+  35% { transform: scale(1.01); opacity: 0.9; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+
+.error-message {
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #D80F0F15;
+  border: 1px solid #D80F0F30;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 40px;
+  transform-origin: center;
+  animation: bounceIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.error-message.hide {
+  animation: bounceOut 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

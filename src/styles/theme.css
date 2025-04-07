@@ -1,0 +1,331 @@
+:root {
+    --green: #72BF78;
+    --red: #D80F0F;
+    --black: #111111;
+    --white: #ffffff;
+    --beige: #FAF7F0;
+    --dark-beige: #ECE8DE;
+    --pink: #B700FF;
+}
+
+[data-theme='dark'] {
+    --green: #72BF78;
+    --red: #D80F0F;
+    --black: #111111;
+    --white: #ffffff;
+    --beige: #FAF7F0;
+    --dark-beige: #ECE8DE;
+    --pink: #B700FF;
+
+    #root {
+        background-color: #000 !important;
+        color: var(--text-primary);
+    }
+    .theme_label {
+        color: #111;
+    }
+    .controls {
+        border: 1px solid #202020;
+        background: #000;
+    }
+    .line{
+        background: #202020;
+        opacity: 1;
+    }
+    .month-display {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+      
+      .month-text {
+        color: var(--white);
+      }
+
+      .month-text:hover {
+        background-color: #ffffff15;
+      }
+      
+      .year-badge {
+        color: var(--white);
+        border: 1px solid #ffffff40;
+      }
+      
+      .year-badge:hover {
+        border-color: #ffffff90;
+      }
+
+      .day {
+        background-color: #0c0c0c;
+        border-color: #ffffff10;
+        color: var(--white);
+      }
+      
+      .day-content.neutral {
+        background-color: #000;
+        color: var(--white);
+      }
+
+      .day-percentage{
+        color: var(--white);
+      }
+
+
+      .day.profit .day-number {
+        color: var(--green);
+      }
+      .day.profit{
+        background-color: #72BF7815;
+        border: 2px solid #72BF7850;
+      }
+      .day-content.profit .day-trades{
+        color: var(--black);
+        font-family: 'Chivo Mono', monospace;
+        font-weight: 500;
+        font-size: 14px;
+      }
+      
+      .day.loss{
+        background-color: #D80F0F15;
+        border: 2px solid #D80F0F50;
+      }
+      
+      .day.loss .day-number {
+        color: var(--red);
+      }
+
+      .day-content.profit .day-trades{
+        color: var(--white);
+      }
+
+
+      .weekdays div {
+        color: #ffffff30;
+      }
+      .logo{
+        background-color: #000;
+        border: 1px solid #ffffff50;
+      }
+      .logo *{
+        fill: var(--white);
+      }
+
+      .calendar-stats {
+        display: flex;
+        justify-content: space-between;
+        background: #ffffff15;
+        border-radius: 10px;
+        margin-top: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #ffffff40;
+        border: 1px solid #ffffff15;
+      }
+      .stat_text {
+        color: var(--white) !important;
+      }
+      
+      .day-title {
+        color: var(--white);
+      }
+      .trades-table tr.template-row td{
+        background-color: transparent !important;
+        color: var(--white);
+      }
+      .trades-table tr.template-row td input[type="text"]{
+        color: var(--white)
+      }
+      .trades-table tr.template-row td input[type="text"]::placeholder{
+        color: #ffffff40;
+      }
+      .trades-table tr.template-row td{
+        border: 1px dashed #ffffff20;
+      }
+      .new-trade-log{
+        background-color: #B700FF25;
+      }
+      .new-trade-log:hover{
+        background-color: #B700FF35;
+      }
+
+      .logo_wrapper:hover .settings-btn{
+        background-color: #B700FF35;
+      }
+
+      .trades-table thead{
+        background-color: #ffffff15;
+      }
+      .trades-table th{
+        color: #ffffff80;
+      }
+
+      .position-badge.template {
+        background-color: #ffffff10;
+        color: #ffffff80;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px dashed #ffffff20;
+        min-width: 60px;
+      }
+      
+      .position-badge.template:hover {
+        background-color: #ffffff15;
+        border-style: solid;
+      }
+
+      .position-badge.template.selected-long {
+        background-color: var(--green);
+        color: white;
+        border: none;
+      }
+      
+      .position-badge.template.selected-short {
+        background-color: var(--red);
+        color: white;
+        border: none;
+      }
+      .session-badge{
+        background-color: #B700FF35;
+        /* user-select: none;
+        -webkit-user-select: none; */
+      }
+      .note-placeholder{
+        color: #ffffff80;
+      }
+      .save-button{
+        background-color: #B700FF35;
+      }
+      .trades-table-container{
+        border-color: #ffffff20;
+      }
+      .trades-footer{
+        background-color: #ffffff15;
+      }
+      .trades-stats{
+        color: #ffffff40;
+      }
+      .trades-table td {
+        border-right: 1px solid #ffffff10;
+        color: var(--white);
+      }
+
+      .context-menu{
+        background: #121212;
+        border: 1px solid #ffffff15;
+      }
+      .context-menu button{
+        color: var(--white);      }
+      .context-menu button:hover{
+        background-color: #ffffff10;
+      }
+      .titlebar{
+        border-bottom: 1px solid #ffffff25;
+      }
+      .titlebar-title{
+        color: var(--white);
+      }
+      .logo_titlebar_div svg path{
+        fill: #ffffff;
+      }
+
+      /* Modal styles */
+
+      .settings-modal{
+        background-color: #55555515;
+        backdrop-filter: blur(30px);
+        border: 2px solid #ffffff15;
+      }
+      .settings_content{
+       color: #fff;
+      }
+      .theme_description{
+        color: #ffffff80;
+      }
+      .theme_label{
+        color: var(--white);
+        background-color: #ffffff15;
+        border: 1px solid #ffffff10;
+      }
+      .theme-block.active .theme_label {
+        background-color: #B700FF35;
+        color: var(--pink);
+        border:none
+      }
+      .theme-block.active .theme_image_block {
+        border: 2px solid #B700FF40;
+      }
+      .theme_image_block{
+        background-color: #ffffff20;
+        border: 1px solid #ffffff10;
+      }
+      .block-header{
+        border-bottom: 0.5px solid #ffffff30;
+      }
+      .close-button{
+        color: var(--white);
+      }
+      .close-button:hover{
+        background-color: #ffffff10;
+      }
+      .lable_input{
+        color: var(--white);
+      }
+      .input-container{
+        border-bottom: 0.5px solid #ffffff10;
+      }
+      .input-field{
+        background-color: #B700FF25;
+        border: 1px dashed #B700FF70;
+      }
+      .logout-button{
+        background-color: #3E0B0F;
+        color: #86212B;
+      }
+
+      .logout-button p{
+        color: #86212B;
+      }
+      .logout-button *{
+        fill: #86212B;
+      }
+      .cancel-button{
+        border-color: #B700FF35;
+      }
+      .month-cell{
+        background-color: #ffffff15;
+        border: 1px solid #ffffff20;
+        color: var(--white);
+      }
+      .month-cell.profit{
+        color: var(--green) !important;
+        background-color: #72BF7815 !important;
+        border: 1px solid #72BF7860 !important;
+      }
+      .month-cell.profit .day-header .day-percentage{
+        color: var(--green);
+      }
+      .month-cell.loss{
+        color: var(--red) !important;
+        background-color: #D80F0F15 !important;
+        border: 1px solid #D80F0F60 !important;
+      }
+      .month-cell.loss .day-header .day-percentage{
+        color: var(--red);
+      }
+      .note-modal{
+        background-color: #55555515;
+        backdrop-filter: blur(50px);
+        border: 2px solid #ffffff15;
+      }
+      .note-modal-content textarea{
+        background-color: #B700FF25;
+        border: 1px dashed #B700FF70;
+        color: var(--white);
+      }
+      .save-note-button{
+        background-color: #B700FF35;
+      }
+      .save-note-button:hover{
+        background-color: #B700FF45;
+      }
+}
