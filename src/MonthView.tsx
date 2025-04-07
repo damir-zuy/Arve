@@ -3,7 +3,6 @@ import './App.css';
 import ArrowLeft from './assets/Arrow_left.svg';
 import ArrowRight from './assets/Arrow_right.svg';
 import NewCross from './assets/New_cross.svg';
-import DayView from './DayView';
 import {ReactComponent as SettingsIcon} from './assets/Settings.svg';
 import {ReactComponent as Logo} from './assets/Logo.svg';
 import SettingsModal from './components/SettingsModal';
@@ -17,8 +16,9 @@ interface DayData {
   isToday?: boolean;
   isOtherMonth?: boolean;
   isFutureDay?: boolean;
-  tradeCount: number; // Add this to track number of trades per day
+  tradeCount: number;
 }
+
 
 interface MonthViewProps {
   setNotification: (message: string | null) => void;
@@ -29,7 +29,6 @@ interface MonthViewProps {
 }
 
 function MonthView({ setNotification, setNotificationClass, currentDate, onViewChange, selectedDate }: MonthViewProps) {
-  // Initialize with selectedDate if provided, otherwise use currentDate
   const [viewDate, setViewDate] = useState(selectedDate || currentDate);
   const [calendarDays, setCalendarDays] = useState<DayData[]>([]);
   const [isMonthSelectorOpen, setIsMonthSelectorOpen] = useState(false);
@@ -37,24 +36,23 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
   const yearSelectorRef = useRef<HTMLDivElement>(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
-  const [monthNames] = useState(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']);
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [username, setUsername] = useState('');
   const navigate = useNavigate();
-  const [notification, setNotificationState] = useState<string | null>(null);
-  const [notificationClass, setNotificationClassState] = useState<string>('');
-  const [email, setEmail] = useState('');
+  const [email] = useState('');
 
   useEffect(() => {
     if (selectedDate) {
       setViewDate(selectedDate);
-      const loadCalendarDays = async () => {
-        const days = await generateCalendarDays();
-        setCalendarDays(days);
-      };
       loadCalendarDays();
     }
   }, [selectedDate]);
+
+  useEffect(() => {
+    if (currentDate) {
+      loadCalendarDays();
+    }
+  }, [currentDate]);
 
   const handlePrevMonth = () => {
     const prevMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1);
@@ -98,92 +96,99 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
   };
 
   const generateCalendarDays = async () => {
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth() + 1; // API expects 1-based month
-
     try {
-        const response = await fetch(
-            `http://localhost:5000/trades/month/${year}/${month}`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch trade data');
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1; // Adjust for 1-based months
+      const response = await fetch(
+        `http://localhost:5000/api/trades/month/${year}/${month}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         }
+      );
 
-        const tradeSummaries = await response.json();
-        const firstDayOfMonth = new Date(year, month - 1, 1);
-        const dayOfWeek = firstDayOfMonth.getDay();
-        const firstDayPosition = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        const lastDayOfMonth = new Date(year, month, 0).getDate();
-        const today = new Date();
+      if (!response.ok) {
+        throw new Error('Failed to fetch trade data');
+      }
 
-        const days: DayData[] = [];
+      const tradeSummaries = await response.json();
+      const firstDay = new Date(year, month - 1, 1);
+      const lastDay = new Date(year, month, 0);
+      const firstDayOfWeek = firstDay.getDay() || 7;
+      const daysInMonth = lastDay.getDate();
+      const days: DayData[] = [];
 
-        const prevMonth = new Date(year, month - 2, 1);
-        const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
-        for (let i = 0; i < firstDayPosition; i++) {
-            const date = prevMonthLastDay - firstDayPosition + i + 1;
-            days.push({
-                date: date,
-                percentage: 0,
-                amount: 0,
-                isCurrentMonth: false,
-                isOtherMonth: true,
-                tradeCount: 0
-            });
-        }
+      // Add days from previous month
+      const prevMonthDays = firstDayOfWeek - 1;
+      const prevMonth = new Date(year, month - 1, 0);
+      for (let i = prevMonthDays - 1; i >= 0; i--) {
+        days.push({
+          date: prevMonth.getDate() - i,
+          percentage: 0,
+          amount: 0,
+          isCurrentMonth: false,
+          isOtherMonth: true,
+          tradeCount: 0
+        });
+      }
 
-        for (let i = 1; i <= lastDayOfMonth; i++) {
-            const currentDay = new Date(year, month - 1, i);
-            const tradeSummary = tradeSummaries.find(summary => summary.day === i);
-            
-            const isFutureDay = currentDay > today;
+      // Current month days
+      const today = new Date();
+      for (let i = 1; i <= daysInMonth; i++) {
+        const currentDay = new Date(year, month - 1, i);
+        const tradeSummary = tradeSummaries.find((summary: { day: number }) => summary.day === i);
+        const isFutureDay = currentDay > today;
 
-            days.push({
-                date: i,
-                percentage: tradeSummary ? parseFloat(tradeSummary.totalResult.toFixed(2)) : 0,
-                amount: tradeSummary ? tradeSummary.totalResult * 1000 : 0,
-                isCurrentMonth: true,
-                isToday: currentDay.getDate() === today.getDate() && 
-                         currentDay.getMonth() === today.getMonth() && 
-                         currentDay.getFullYear() === today.getFullYear(),
-                isFutureDay: isFutureDay,
-                tradeCount: tradeSummary ? tradeSummary.tradeCount : 0
-            });
-        }
+        days.push({
+          date: i,
+          percentage: tradeSummary ? tradeSummary.totalResult : 0,
+          amount: 0,
+          isCurrentMonth: true,
+          isToday: currentDay.getDate() === today.getDate() && 
+                   currentDay.getMonth() === today.getMonth() && 
+                   currentDay.getFullYear() === today.getFullYear(),
+          isFutureDay,
+          tradeCount: tradeSummary ? tradeSummary.tradeCount : 0
+        });
+      }
 
-        const totalDaysNeeded = Math.ceil((firstDayPosition + lastDayOfMonth) / 7) * 7;
-        const nextMonthDays = totalDaysNeeded - days.length;
+      // Fill remaining days from next month
+      const remainingDays = 42 - days.length; // 6 rows × 7 days
+      for (let i = 1; i <= remainingDays; i++) {
+        days.push({
+          date: i,
+          percentage: 0,
+          amount: 0,
+          isCurrentMonth: false,
+          isOtherMonth: true,
+          tradeCount: 0
+        });
+      }
 
-        for (let i = 1; i <= nextMonthDays; i++) {
-            days.push({
-                date: i,
-                percentage: 0,
-                amount: 0,
-                isCurrentMonth: false,
-                isOtherMonth: true,
-                tradeCount: 0
-            });
-        }
-
-        setCalendarDays(days);
-        return days;
+      return {
+        days,
+        totalPercentage: days.reduce((sum, day) => sum + (day.isCurrentMonth ? day.percentage : 0), 0),
+        tradeCount: days.reduce((sum, day) => sum + (day.isCurrentMonth ? day.tradeCount : 0), 0)
+      };
     } catch (error) {
-        console.error('Error generating calendar days:', error);
-        return [];
+      console.error('Error generating calendar days:', error);
+      throw error;
     }
-};
+  };
+
+  const loadCalendarDays = async () => {
+    try {
+      const data = await generateCalendarDays();
+      setCalendarDays(data.days);
+    } catch (error) {
+      console.error('Error loading calendar days:', error);
+      setNotification('Failed to load calendar data');
+      setNotificationClass('notification-error');
+    }
+  };
 
   useEffect(() => {
-    const loadCalendarDays = async () => {
-      const days = await generateCalendarDays();
-      setCalendarDays(days);
-    };
     loadCalendarDays();
   }, [viewDate]);
 
@@ -213,13 +218,6 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
     }
   }, [isYearSelectorOpen]);
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-  }, []);
-
   const getDayClass = (day: DayData) => {
     const baseClass = 'day';
     const monthClass = day.isOtherMonth ? ' other-month' : ' current-month';
@@ -239,18 +237,7 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
     return value === 0 ? '0%' : (value > 0 ? `+${value}%` : `${value}%`);
   };
 
-  const formatAmount = (value: number) => {
-    return value === 0 ? '0$' : (value > 0 ? `+${value}$` : `${value}$`);
-  };
-
-  const getMonthName = (date: Date) => {
-    return date.toLocaleString('default', { month: 'long' });
-  };
-  
   const calculateStats = () => {
-    const today = new Date();
-    const selectedDate = viewDate;
-    
     const currentMonthDays = calendarDays.filter(day => 
       day.isCurrentMonth && 
       !day.isFutureDay
@@ -261,14 +248,12 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
     const neutralDays = currentMonthDays.filter(day => day.percentage === 0);
     
     const totalPercentage = currentMonthDays.reduce((sum, day) => sum + day.percentage, 0);
-    const totalAmount = currentMonthDays.reduce((sum, day) => sum + day.amount, 0);
     
     return {
       profitDays: profitDays.length,
       lossDays: lossDays.length,
       neutralDays: neutralDays.length,
-      totalPercentage: parseFloat(totalPercentage.toFixed(2)),
-      totalAmount: parseFloat(totalAmount.toFixed(2))
+      totalPercentage: parseFloat(totalPercentage.toFixed(2))
     };
   };
 
@@ -304,10 +289,9 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
     if (!day.isFutureDay) {
       let targetDate;
       if (day.isOtherMonth) {
-        // If the day is from previous month
-        if (day.date > 20) { // Assuming days > 20 are from previous month
+        if (day.date > 20) {
           targetDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, day.date);
-        } else { // Days from next month
+        } else {
           targetDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, day.date);
         }
       } else {
@@ -316,7 +300,7 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
       
       const event = new CustomEvent('dateChange', { detail: targetDate });
       window.dispatchEvent(event);
-      setViewDate(targetDate); // Update the view date to show the new month
+      setViewDate(targetDate);
       onViewChange('Day');
     }
   }, [viewDate, onViewChange]);
@@ -324,18 +308,8 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
   const handleLogout = () => {
     console.log('Logging out...');
     localStorage.removeItem('username');
-    setUsername('');
     setIsSettingsModalOpen(false);
     navigate('/sign-in');
-  };
-
-  const someActionThatTriggersNotification = () => {
-    setNotification('Some notification message');
-    setNotificationClass('notification-success');
-    setTimeout(() => {
-      setNotification(null);
-      setNotificationClass('');
-    }, 3000);
   };
 
   return (

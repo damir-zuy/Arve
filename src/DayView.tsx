@@ -3,7 +3,6 @@ import ArrowLeft from './assets/Arrow_left.svg';
 import ArrowRight from './assets/Arrow_right.svg';
 import NewCross from './assets/New_cross.svg';
 import {ReactComponent as Logo} from './assets/Logo.svg';
-import DarkMode from '../assets/Dark_mode.svg';
 import NoteModal from './components/NoteModal';
 import { GoArrowRight as SaveIcon } from "react-icons/go";
 import { motion } from 'framer-motion';
@@ -19,6 +18,8 @@ interface DayViewProps {
   onViewChange: (view: 'Day' | 'Month' | 'Year') => void;
   onYearChange: (yearIndex: number) => void;
   onMonthChange: (monthIndex: number) => void;
+  setNotification: (message: string | null) => void;
+  setNotificationClass: (className: string) => void;
 }
 
 // Define a type for the trade object
@@ -83,7 +84,7 @@ const DayView: React.FC<DayViewProps> = ({
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const weekDay = weekDays[date.getDay()];
     return `${weekDay} ${day}/${month}/${year}`;
   };
@@ -138,7 +139,7 @@ const DayView: React.FC<DayViewProps> = ({
             });
 
             try {
-                const response = await fetch(`http://localhost:5000/trades/${tradeToUpdate._id}`, {
+                const response = await fetch(`http://localhost:5000/api/trades/${tradeToUpdate._id}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -184,7 +185,7 @@ const handleSaveClick = async () => {
   try {
     const method = isEditMode && selectedTradeIndex !== null ? 'PUT' : 'POST';
     const tradeId = isEditMode && selectedTradeIndex !== null ? trades[selectedTradeIndex]._id : '';
-    const url = `http://localhost:5000/trades${method === 'PUT' ? `/${tradeId}` : ''}`;
+    const url = `http://localhost:5000/api/trades${method === 'PUT' ? `/${tradeId}` : ''}`;
 
     console.log('Sending trade data:', { // Debug log
       pair: pairValue,
@@ -240,7 +241,11 @@ const handleSaveClick = async () => {
 
   } catch (error) {
     console.error('Error saving trade:', error);
-    setNotification(error.message);
+    if (error instanceof Error) {
+      setNotification(error.message);
+    } else {
+      setNotification('An unknown error occurred');
+    }
     setTimeout(() => setNotification(null), 3000);
   }
 };  
@@ -324,7 +329,7 @@ const handleSaveClick = async () => {
 const fetchTrades = useCallback(async () => {
   try {
     const dateString = formatDateForAPI(currentDate);
-    const response = await fetch(`http://localhost:5000/trades/${dateString}`, {
+    const response = await fetch(`http://localhost:5000/api/trades/${dateString}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -413,7 +418,7 @@ const fetchTrades = useCallback(async () => {
       
       if (tradeToDelete._id) {
         try {
-          const response = await fetch(`http://localhost:5000/trades/${tradeToDelete._id}`, {
+          const response = await fetch(`http://localhost:5000/api/trades/${tradeToDelete._id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -453,7 +458,7 @@ const fetchTrades = useCallback(async () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (contextMenuVisible && event.target instanceof Node && !event.target.closest('.context-menu')) {
+      if (contextMenuVisible && event.target instanceof Element && !event.target.closest('.context-menu')) {
         closeContextMenu();
       }
     };
@@ -639,7 +644,7 @@ const fetchTrades = useCallback(async () => {
                   >
                     <td>{trade.pair}</td>
                     <td>{trade.date}</td>
-                    <td onClick={() => handleSessionClick(index)} style={{ cursor: 'pointer' }}>
+                    <td onClick={handleSessionClick} style={{ cursor: 'pointer' }}>
                       <motion.span 
                         className={`session-badge ${trade.session === selectedSession ? 'selected' : ''}`}
                         whileTap={{ scale: 0.9 }}
@@ -683,7 +688,7 @@ const fetchTrades = useCallback(async () => {
                       readOnly
                     />
                   </td>
-                  <td onClick={() => handleSessionClick(-1)} style={{ cursor: 'pointer' }}>
+                  <td onClick={handleSessionClick} style={{ cursor: 'pointer' }}>
                     <motion.span 
                       className={`session-badge ${selectedSession ? 'selected' : ''}`}
                       whileTap={{ scale: 0.9 }}
@@ -763,7 +768,7 @@ const fetchTrades = useCallback(async () => {
         isOpen={isNoteModalOpen}
         onClose={() => setIsNoteModalOpen(false)}
         initialNote={currentNote}
-        onSave={saveNote}
+        onSave={(note: string) => saveNote(note, [])}
       />
 
       {contextMenuVisible && selectedTradeIndex !== null && contextMenuPosition && (

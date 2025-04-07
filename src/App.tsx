@@ -5,9 +5,8 @@ import MonthView from './MonthView';
 import YearView from './YearView';
 import SignIn from './pages/Auth/SignIn';
 import SignUp from './pages/Auth/SignUp';
-import { motion } from 'framer-motion';
 import SettingsModal from './components/SettingsModal';
-import { NotificationProvider } from './NotificationContext';
+import { NotificationProvider, useNotification } from './NotificationContext';
 import NotificationDisplay from './NotificationDisplay';
 
 import './App.css';
@@ -15,36 +14,47 @@ import './styles/theme.css';
 
 declare global {
     interface Window {
-      require: any;
+        ipcRenderer: {
+            on(channel: string, func: (...args: any[]) => void): void;
+            off(channel: string, func: (...args: any[]) => void): void;
+            send(channel: string, ...args: any[]): void;
+            invoke(channel: string, ...args: any[]): Promise<any>;
+        };
     }
-  }
-  
-  const { ipcRenderer } = window.require('electron');
+}
 
-const App: React.FC = () => {
+const ipcRenderer = window.ipcRenderer;
+
+const AppContent: React.FC = () => {
     const isLoggedIn = !!localStorage.getItem('token');
     const navigate = useNavigate();
+    const { setNotification, setNotificationClass } = useNotification();
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-    const [email, setEmail] = useState('');
-    const [notification, setNotification] = useState<string | null>(null);
-    const [notificationClass, setNotificationClass] = useState<string>('');
+    const [email] = useState('');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [currentView, setCurrentView] = useState<'Day' | 'Month' | 'Year'>('Month');
 
     useEffect(() => {
-        ipcRenderer.on('update_available', () => {
-          alert('A new update is available. Downloading now...');
-        });
-    
-        ipcRenderer.on('update_downloaded', () => {
-          const confirmed = confirm('Update downloaded. Restart now to apply?');
-          if (confirmed) {
-            ipcRenderer.send('restart_app');
-          }
-        });
-      }, []);
-    
+        const token = localStorage.getItem('token');
+        if (!token && window.location.pathname !== '/signin' && window.location.pathname !== '/signup') {
+            navigate('/signin');
+        }
+    }, [navigate]);
+
+    useEffect(() => {
+        if (ipcRenderer) {
+            ipcRenderer.on('update_available', () => {
+                alert('A new update is available. Downloading now...');
+            });
+
+            ipcRenderer.on('update_downloaded', () => {
+                const confirmed = confirm('Update downloaded. Restart now to apply?');
+                if (confirmed) {
+                    ipcRenderer.send('restart_app');
+                }
+            });
+        }
+    }, []);
 
     useEffect(() => {
         const handleDateChange = (e: CustomEvent) => {
@@ -59,7 +69,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') || 'system';
-        
+
         const applyTheme = () => {
             if (savedTheme === 'system') {
                 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -70,14 +80,14 @@ const App: React.FC = () => {
         };
 
         applyTheme();
-        
+
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = (e: MediaQueryListEvent) => {
             if (localStorage.getItem('theme') === 'system') {
                 document.body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
             }
         };
-        
+
         mediaQuery.addListener(handleChange);
         return () => mediaQuery.removeListener(handleChange);
     }, []);
@@ -113,7 +123,6 @@ const App: React.FC = () => {
     };
 
     const handleViewChange = (view: 'Day' | 'Month' | 'Year') => {
-        setCurrentView(view);
         switch (view) {
             case 'Day':
                 navigate('/day');
@@ -128,30 +137,30 @@ const App: React.FC = () => {
     };
 
     return (
-        <NotificationProvider>
+        <>
             <NotificationDisplay />
             <Routes>
-                <Route path="/" element={isLoggedIn ? 
-                    <MonthView 
-                        setNotification={setNotification} 
+                <Route path="/" element={isLoggedIn ?
+                    <MonthView
+                        setNotification={setNotification}
                         setNotificationClass={setNotificationClass}
                         currentDate={currentDate}
                         selectedDate={selectedDate}
                         onViewChange={handleViewChange}
-                    /> : 
+                    /> :
                     <Navigate to="/signin" />
                 } />
-                <Route path="/day" element={isLoggedIn ? 
-                    <DayView 
+                <Route path="/day" element={isLoggedIn ?
+                    <DayView
+                        setNotification={setNotification}
+                        setNotificationClass={setNotificationClass}
                         currentDate={currentDate}
                         onPrevDay={handlePrevDay}
                         onNextDay={handleNextDay}
                         onViewChange={handleViewChange}
                         onYearChange={handleYearChange}
                         onMonthChange={handleMonthChange}
-                        setNotification={setNotification}
-                        setNotificationClass={setNotificationClass}
-                    /> : 
+                    /> :
                     <Navigate to="/signin" />
                 } />
                 <Route path="/signin" element={<SignIn
@@ -160,8 +169,8 @@ const App: React.FC = () => {
                 />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/year" element={isLoggedIn ?
-                    <YearView 
-                        setNotification={setNotification} 
+                    <YearView
+                        setNotification={setNotification}
                         setNotificationClass={setNotificationClass}
                         currentDate={currentDate}
                         setSelectedDate={setSelectedDate}
@@ -170,7 +179,7 @@ const App: React.FC = () => {
                     <Navigate to="/signin" />
                 } />
             </Routes>
-            <SettingsModal 
+            <SettingsModal
                 isOpen={isSettingsModalOpen}
                 onClose={() => setIsSettingsModalOpen(false)}
                 initialNote=""
@@ -183,6 +192,14 @@ const App: React.FC = () => {
                 setNotification={setNotification}
                 setNotificationClass={setNotificationClass}
             />
+        </>
+    );
+};
+
+const App: React.FC = () => {
+    return (
+        <NotificationProvider>
+            <AppContent />
         </NotificationProvider>
     );
 };

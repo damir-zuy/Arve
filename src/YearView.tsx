@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import {ReactComponent as Logo} from './assets/Logo.svg';
 import ArrowLeft from './assets/Arrow_left.svg';
@@ -33,18 +33,27 @@ interface MonthData {
   tradeCount: number;
 }
 
+interface TradeSummary {
+  day: number;
+  totalResult: number;
+  tradeCount: number;
+}
+
 function YearView({ setNotification, setNotificationClass, currentDate, onViewChange, setSelectedDate }: YearViewProps) {
-  const [currentView, setCurrentView] = useState<'Day' | 'Month' | 'Year'>('Year');
   const [isYearSelectorOpen, setIsYearSelectorOpen] = useState(false);
   const yearSelectorRef = useRef<HTMLDivElement>(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [email] = useState('');
   const [monthsData, setMonthsData] = useState<MonthData[]>([]);
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const [viewDate, setViewDate] = useState(currentDate);
+
+  useEffect(() => {
+    // Initialize currentYear based on currentDate prop
+    setCurrentYear(currentDate.getFullYear());
+  }, [currentDate]);
 
   const handlePrevYear = () => {
     setCurrentYear(currentYear - 1);
@@ -67,7 +76,7 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
   const generateMonthData = async (year: number, month: number) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/trades/month/${year}/${month + 1}`,
+        `http://localhost:5000/api/trades/month/${year}/${month + 1}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -79,7 +88,7 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
         throw new Error('Failed to fetch trade data');
       }
 
-      const tradeSummaries = await response.json();
+      const tradeSummaries = await response.json() as TradeSummary[];
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
       const today = new Date();
@@ -178,18 +187,10 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
     }
   }, [isYearSelectorOpen]);
 
-  const getDayClass = (day: DayData) => {
-    const baseClass = 'mini-day';
-    const monthClass = day.isOtherMonth ? ' other-month' : '';
-    const valueClass = day.percentage > 0 ? ' profit' : (day.percentage < 0 ? ' loss' : '');
-    const todayClass = day.isToday ? ' today' : '';
-    const futureClass = day.isFutureDay ? ' future-day' : '';
-    return baseClass + valueClass + monthClass + todayClass + futureClass;
-  };
-
   const handleMonthClick = (monthIndex: number) => {
-    const selectedDate = new Date(currentYear, monthIndex, 1);
-    setSelectedDate(selectedDate);
+    const newDate = new Date(currentDate.getFullYear(), monthIndex, 1);
+    setSelectedDate(newDate);
+    // Update the current view before navigating
     onViewChange('Month');
   };
 
@@ -343,6 +344,8 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
         }}
         email={email}
         onLogout={handleLogout}
+        setNotification={setNotification}
+        setNotificationClass={setNotificationClass}
       />
     </div>
   );

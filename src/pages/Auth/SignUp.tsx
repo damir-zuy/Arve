@@ -10,10 +10,9 @@ const SignUp: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [showPassword, setShowPassword] = useState(false); // State for password visibility
-    const navigate = useNavigate(); // Initialize useNavigate
-    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+    const [showPassword, setShowPassword] = useState(false);
     const [isHiding, setIsHiding] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (errorMessage) {
@@ -44,7 +43,6 @@ const SignUp: React.FC = () => {
                 localStorage.setItem('token', data.token); 
                 localStorage.setItem('email', email);
                 window.location.href = '/'; // Force reload to apply isLoggedIn check
-                setIsLoggedIn(true);  // ✅ Update state to trigger rerender
                 navigate('/');  // ✅ Redirect to MonthView
             } else {
                 const errorData = await response.json();

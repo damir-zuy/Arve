@@ -1,10 +1,8 @@
 import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
-import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { autoUpdater } from 'electron-updater'
 
-const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Paths
@@ -29,8 +27,7 @@ function createWindow(bounds?: Electron.Rectangle) {
     titleBarOverlay: {
       color: '#ffffff00',
       symbolColor: '#aaa',
-      height: 31,
-      vibrancy: 'dark', // 'light' | 'dark' | 'medium-light' | 'ultra-dark'
+      height: 31
     },
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
@@ -114,8 +111,8 @@ ipcMain.on('restart_app', () => {
 // Set up the feed URL (GitHub releases, adjust accordingly)
 autoUpdater.setFeedURL({
   provider: 'github',
-  owner: 'your-github-username',
-  repo: 'your-repo-name',
+  owner: 'damir-zuy',
+  repo: 'Arve',
   // optional: specify the URL of your release feed if it's not on GitHub
   // url: 'https://your-server.com/updates'
 })

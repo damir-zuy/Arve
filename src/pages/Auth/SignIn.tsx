@@ -1,60 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Signin.css';
 import {ReactComponent as Logo} from '../../assets/Logo.svg';
 import { ReactComponent as EyeIcon } from '../../assets/eye.svg';
 import { ReactComponent as EyeOffIcon } from '../../assets/eye-off.svg';
 
-const SignIn: React.FC = () => {
+interface SignInProps {
+    setNotification: (message: string | null) => void;
+    setNotificationClass: (className: string) => void;
+}
+
+const SignIn: React.FC<SignInProps> = ({ setNotification, setNotificationClass }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [isHiding, setIsHiding] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const response = await fetch('http://localhost:5000/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-        });
+        try {
+            const response = await fetch('http://localhost:5000/auth/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
 
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('token', data.token); // Store token in local storage
-            window.location.href = data.redirectUrl; // Redirect to MonthView
-        } else {
-            setErrorMessage('Login failed. Please check your credentials.'); // Set error message
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('loginDate', new Date().toISOString());  // Store login date
+                setNotification('Successfully signed in!');
+                setNotificationClass('notification-success');
+                navigate('/');
+            } else {
+                const error = await response.json();
+                setNotification(error.message || 'Failed to sign in');
+                setNotificationClass('notification-error');
+            }
+        } catch (error) {
+            setNotification('Network error occurred');
+            setNotificationClass('notification-error');
         }
     };
-
-    useEffect(() => {
-        if (errorMessage) {
-            const timer = setTimeout(() => {
-                setIsHiding(true);
-                setTimeout(() => {
-                    setErrorMessage('');
-                    setIsHiding(false);
-                }, 500);
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [errorMessage]);
-
-    const isLoggedIn = !!localStorage.getItem('token'); // Check if user is logged in
 
     return (
         <div className="sign_in_bg">
         <div className="signin-container">
             <div className="signin-content">
-                {errorMessage && (
-                    <div className={`error-message ${isHiding ? 'hide' : ''}`}>
-                        {errorMessage}
-                    </div>
-                )}
                 <div className="logo_title">
                 <div className="logo_auth">
                     <Logo />

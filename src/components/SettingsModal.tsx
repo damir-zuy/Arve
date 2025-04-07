@@ -6,7 +6,6 @@ import {ReactComponent as LogoutIcon} from '../assets/logout.svg';
 import {ReactComponent as SystemThemeIcon} from '../assets/sys_theme_image.svg';
 import {ReactComponent as LightThemeIcon} from '../assets/light_theme_image.svg';
 import {ReactComponent as DarkThemeIcon} from '../assets/dark_theme_image.svg';
-import { motion } from 'framer-motion';
 import { useNotification } from '../NotificationContext';
 
 interface SettingsModalProps {
@@ -16,6 +15,8 @@ interface SettingsModalProps {
   onSave: (note: string, images: File[]) => void;
   email: string;
   onLogout: () => void;
+  setNotification: (message: string | null) => void;
+  setNotificationClass: (className: string) => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, email, onLogout }) => {
@@ -24,10 +25,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, email, o
   const [emailState, setEmail] = useState(email);
   const [password, setPassword] = useState('');
   const [initialEmail, setInitialEmail] = useState(email);
-  const [initialPassword, setInitialPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
   const [theme, setTheme] = useState('system');
-  const [successMessage, setSuccessMessage] = useState('');
   const { setNotification, setNotificationClass } = useNotification();
 
   const applySystemTheme = () => {
@@ -37,20 +35,35 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, email, o
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const response = await fetch('http://localhost:5000/user', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      const token = localStorage.getItem('token');
+      if (!token) {
+          onLogout();
+          return;
+      }
 
-      if (response.ok) {
-        const data = await response.json();
-        setEmail(data.email);
-        setInitialEmail(data.email);
-      } else {
-        // setNotification('Failed to fetch user data.');
-        // setNotificationClass('notification-error');
+      try {
+          const response = await fetch('http://localhost:5000/user', {
+              method: 'GET',
+              headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+              }
+          });
+
+          if (response.status === 403 || response.status === 401) {
+              // Token is invalid or expired
+              localStorage.removeItem('token');
+              onLogout();
+              return;
+          }
+
+          if (response.ok) {
+              const data = await response.json();
+              setEmail(data.email);
+              setInitialEmail(data.email);
+          }
+      } catch (error) {
+          console.error('Error fetching user data:', error);
       }
     };
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';  // Changed from bcrypt to bcryptjs
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -56,7 +56,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 console.log('JWT_SECRET:', JWT_SECRET);
 
 // User Registration
-app.post('/register', async (req, res) => {
+app.post('/auth/register', async (req, res) => {
     console.log('Registration request body:', req.body); // Log the request body
     try {
         const { email, password } = req.body;
@@ -80,7 +80,7 @@ app.post('/register', async (req, res) => {
 });
 
 // User Login
-app.post('/login', async (req, res) => {
+app.post('/auth/signin', async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (user && await bcrypt.compare(password, user.password)) {
@@ -110,7 +110,7 @@ app.get('/protected', authenticateToken, (req, res) => {
 
 
 // Log a Trade
-app.post('/trades', authenticateToken, async (req, res) => {
+app.post('/api/trades', authenticateToken, async (req, res) => {
     try {
         const { pair, date, session, position, result, rr, risk, note } = req.body;
         
@@ -164,7 +164,7 @@ app.post('/trades', authenticateToken, async (req, res) => {
 });
 
 // Fetch Trades for a Specific Day
-app.get('/trades', authenticateToken, async (req, res) => {
+app.get('/api/trades', authenticateToken, async (req, res) => {
     try {
         const dateParam = req.query.date; // Get date from query parameter
         const userId = req.user.id;
@@ -195,7 +195,7 @@ app.get('/trades', authenticateToken, async (req, res) => {
 
 
 // Fetch Trades for a Specific Day using path parameter
-app.get('/trades/:date', authenticateToken, async (req, res) => {
+app.get('/api/trades/:date', authenticateToken, async (req, res) => {
     try {
         const dateParam = req.params.date;
         const userId = req.user.id;
@@ -233,7 +233,7 @@ app.get('/trades/:date', authenticateToken, async (req, res) => {
 
 
 // update trade (editing)
-app.put('/trades/:id', authenticateToken, async (req, res) => {
+app.put('/api/trades/:id', authenticateToken, async (req, res) => {
     try {
         const tradeId = req.params.id;
         const userId = req.user.id;
@@ -266,7 +266,7 @@ app.put('/trades/:id', authenticateToken, async (req, res) => {
 });
 
 // delete trade
-app.delete('/trades/:id', authenticateToken, async (req, res) => {
+app.delete('/api/trades/:id', authenticateToken, async (req, res) => {
     try {
         const tradeId = req.params.id;
         const userId = req.user.id;
@@ -286,7 +286,7 @@ app.delete('/trades/:id', authenticateToken, async (req, res) => {
 
 
 // Fetch Trades for a Specific Month
-app.get('/trades/month/:year/:month', authenticateToken, async (req, res) => {
+app.get('/api/trades/month/:year/:month', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const year = parseInt(req.params.year);
@@ -385,6 +385,15 @@ app.get('/trade-profits', authenticateToken, async (req, res) => {
     }
 });
 
+// Add error handling middleware
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
