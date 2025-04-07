@@ -7,9 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "push": "cross-var git add . && git commit -m \"$MSG\" && git push"
-  },
+    "preview": "vite preview"
+    },
   "main": "dist-electron/main.js",
   "build": {
     "appId": "com.arve.app",
