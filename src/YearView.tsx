@@ -42,7 +42,7 @@ interface TradeSummary {
 function YearView({ setNotification, setNotificationClass, currentDate, onViewChange, setSelectedDate }: YearViewProps) {
   const [isYearSelectorOpen, setIsYearSelectorOpen] = useState(false);
   const yearSelectorRef = useRef<HTMLDivElement>(null);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
   const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -188,9 +188,8 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
   }, [isYearSelectorOpen]);
 
   const handleMonthClick = (monthIndex: number) => {
-    const newDate = new Date(currentDate.getFullYear(), monthIndex, 1);
+    const newDate = new Date(currentYear, monthIndex, 1);
     setSelectedDate(newDate);
-    // Update the current view before navigating
     onViewChange('Month');
   };
 

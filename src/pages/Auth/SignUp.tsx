@@ -42,8 +42,7 @@ const SignUp: React.FC = () => {
                 const data = await response.json();
                 localStorage.setItem('token', data.token); 
                 localStorage.setItem('email', email);
-                window.location.href = '/'; // Force reload to apply isLoggedIn check
-                navigate('/');  // ✅ Redirect to MonthView
+                navigate('/');  // This will handle the navigation correctly
             } else {
                 const errorData = await response.json();
                 setErrorMessage(errorData.message || 'Registration failed');
@@ -100,7 +99,7 @@ const SignUp: React.FC = () => {
                 
                 <div className="auth_footer">
                     <p>
-                    Already have an account? <Link className='link_auth_footer' to="/signin">Sign In.</Link> {/* Update link */}
+                    Already have an account? <Link className='link_auth_footer' to="/signin">Sign In</Link>
                     </p>
                 </div>
             </div>

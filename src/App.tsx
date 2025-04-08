@@ -35,8 +35,10 @@ const AppContent: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     useEffect(() => {
+        const publicPaths = ['/signin', '/signup'];
         const token = localStorage.getItem('token');
-        if (!token && window.location.pathname !== '/signin' && window.location.pathname !== '/signup') {
+        const currentPath = window.location.hash.replace('#', '');
+        if (!token && !publicPaths.includes(currentPath)) {
             navigate('/signin');
         }
     }, [navigate]);

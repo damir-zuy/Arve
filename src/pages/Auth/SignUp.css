@@ -152,6 +152,7 @@
   color: var(--pink);
   text-decoration: underline;
   cursor: pointer;
+  font-size: 20px;
 }
 
 .signup-container {

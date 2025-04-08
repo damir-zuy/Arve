@@ -762,10 +762,6 @@ p {
 }
 
 
-.trades-table tr.trade-row td:first-child {
- 
-}
-
 .trades-table tr.trade-row td:last-child {
   width: 100%;
   white-space: normal;

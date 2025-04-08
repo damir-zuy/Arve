@@ -5,7 +5,7 @@ import NewCross from './assets/New_cross.svg';
 import {ReactComponent as Logo} from './assets/Logo.svg';
 import NoteModal from './components/NoteModal';
 import { GoArrowRight as SaveIcon } from "react-icons/go";
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {ReactComponent as NewTradeLog} from './assets/add_log.svg';
 import {ReactComponent as SettingsIcon} from './assets/Settings.svg';
 import SettingsModal from './components/SettingsModal';
@@ -493,20 +493,32 @@ const fetchTrades = useCallback(async () => {
     }
   };
 
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 4000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [notification, setNotification]);
+
   return (
     <div className='calendar-container'>
-      {notification && (
-        <motion.div
-          className={`notification ${notificationClass}`}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.5 }}
-          style={{ position: 'fixed', top: '-10px', left: '0', right: '0', transform: 'translateX(-50%)', zIndex: 10000 }}
-        >
-          {notification}
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            className={`notification ${notificationClass}`}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            style={{ position: 'fixed', top: '-10px', left: '0', right: '0', transform: 'translateX(-50%)', zIndex: 10000 }}
+          >
+            {notification}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <header className="calendar-header">
         <div className="logo_wrapper">
           <div className="logo">

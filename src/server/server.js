@@ -11,8 +11,13 @@ dotenv.config();
 
 const app = express();
 
-// Use CORS middleware
-app.use(cors());
+// Update CORS configuration
+app.use(cors({
+    origin: 'http://localhost:5173', // Replace with your frontend URL
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/arve_db', {
@@ -56,7 +61,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 console.log('JWT_SECRET:', JWT_SECRET);
 
 // User Registration
-app.post('/auth/register', async (req, res) => {
+app.post('/auth/signup', async (req, res) => {
     console.log('Registration request body:', req.body); // Log the request body
     try {
         const { email, password } = req.body;
