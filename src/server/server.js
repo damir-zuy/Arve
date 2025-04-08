@@ -6,6 +6,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -393,6 +394,14 @@ app.get('/trade-profits', authenticateToken, async (req, res) => {
     }
 });
 
+// Serve static files from the React build
+app.use(express.static(path.join(__dirname, '../../dist')));
+
+// Catch-all route to serve index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../dist/index.html'));
+});
+
 // Add error handling middleware
 app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
@@ -402,6 +411,10 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
 });
+
+app.get('/', (req, res) => {
+    res.send('Arve backend is running 🚀');
+  });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
