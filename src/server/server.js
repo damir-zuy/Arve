@@ -394,12 +394,23 @@ app.get('/trade-profits', authenticateToken, async (req, res) => {
     }
 });
 
+// Create __dirname equivalent for ES modules
+const __filename = new URL(import.meta.url).pathname;
+const __dirname = path.dirname(__filename);
+
+// Fix path for Windows
+const normalizePath = (pathString) => {
+    return path.normalize(pathString.replace(/^\/[A-Za-z]:/, ''));
+};
+
+const distPath = normalizePath(path.join(__dirname, '../../dist'));
+
 // Serve static files from the React build
-app.use(express.static(path.join(__dirname, '../../dist')));
+app.use(express.static(distPath));
 
 // Catch-all route to serve index.html
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../dist/index.html'));
+    res.sendFile(path.join(distPath, 'index.html'));
 });
 
 // Add error handling middleware
