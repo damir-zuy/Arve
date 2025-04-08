@@ -19,17 +19,15 @@ interface DayData {
   tradeCount: number;
 }
 
-
 interface MonthViewProps {
   setNotification: (message: string | null) => void;
   setNotificationClass: (className: string) => void;
   currentDate: Date;
   onViewChange: (view: 'Day' | 'Month' | 'Year') => void;
-  selectedDate?: Date;
 }
 
-function MonthView({ setNotification, setNotificationClass, currentDate, onViewChange, selectedDate }: MonthViewProps) {
-  const [viewDate, setViewDate] = useState(selectedDate || currentDate);
+function MonthView({ setNotification, setNotificationClass, currentDate, onViewChange }: MonthViewProps) {
+  const [viewDate, setViewDate] = useState(currentDate);
   const [calendarDays, setCalendarDays] = useState<DayData[]>([]);
   const [isMonthSelectorOpen, setIsMonthSelectorOpen] = useState(false);
   const [isYearSelectorOpen, setIsYearSelectorOpen] = useState(false);
@@ -42,15 +40,8 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
   const [email] = useState('');
 
   useEffect(() => {
-    if (selectedDate) {
-      setViewDate(selectedDate);
-    }
-  }, [selectedDate]);
-
-  useEffect(() => {
-    if (currentDate) {
-      loadCalendarDays();
-    }
+    setViewDate(currentDate);
+    loadCalendarDays();
   }, [currentDate]);
 
   const handlePrevMonth = () => {

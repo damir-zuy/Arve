@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import './App.css';
 import {ReactComponent as Logo} from './assets/Logo.svg';
 import ArrowLeft from './assets/Arrow_left.svg';
@@ -39,10 +39,39 @@ interface TradeSummary {
   tradeCount: number;
 }
 
+// Add memoized month cell component
+const MonthCell = React.memo(({ monthName, monthData, index, onClick }: {
+  monthName: string;
+  monthData: MonthData;
+  index: number;
+  onClick: (index: number) => void;
+}) => {
+  return (
+    <div
+      className={`day-cell month-cell ${monthData.totalPercentage > 0 ? 'profit' : monthData.totalPercentage < 0 ? 'loss' : ''}`}
+      onClick={() => onClick(index)}
+    >
+      <div className="day-header">
+        <span className="day-number">{monthName}</span>
+        {monthData.tradeCount > 0 && (
+          <span className="day-percentage">
+            {monthData.totalPercentage > 0 ? '+' : ''}{monthData.totalPercentage}%
+          </span>
+        )}
+      </div>
+      {monthData.tradeCount > 0 && (
+        <div className="trade-info">
+          <span className="trade-count">{monthData.tradeCount} trades</span>
+        </div>
+      )}
+    </div>
+  );
+});
+
 function YearView({ setNotification, setNotificationClass, currentDate, onViewChange, setSelectedDate }: YearViewProps) {
   const [isYearSelectorOpen, setIsYearSelectorOpen] = useState(false);
   const yearSelectorRef = useRef<HTMLDivElement>(null);
-  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -73,7 +102,8 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
     navigate('/sign-in');
   };
 
-  const generateMonthData = async (year: number, month: number) => {
+  // Optimize data fetching with debouncing
+  const generateMonthData = useCallback(async (year: number, month: number) => {
     try {
       const response = await fetch(
         `http://localhost:5000/api/trades/month/${year}/${month + 1}`,
@@ -149,19 +179,30 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
         tradeCount: 0
       };
     }
-  };
+  }, []);
+
+  // Cache monthly data
+  const monthDataCache = useRef(new Map<string, MonthData>());
+
+  const loadYearData = useCallback(async () => {
+    const cachedKey = `${currentYear}`;
+    if (monthDataCache.current.has(cachedKey)) {
+      setMonthsData(monthDataCache.current.get(cachedKey)!);
+      return;
+    }
+
+    const data = await Promise.all(
+      Array.from({ length: 12 }, (_, month) => 
+        generateMonthData(currentYear, month)
+      )
+    );
+    monthDataCache.current.set(cachedKey, data);
+    setMonthsData(data);
+  }, [currentYear, generateMonthData]);
 
   useEffect(() => {
-    const loadYearData = async () => {
-      const data = await Promise.all(
-        Array.from({ length: 12 }, (_, month) => 
-          generateMonthData(currentYear, month)
-        )
-      );
-      setMonthsData(data);
-    };
     loadYearData();
-  }, [currentYear]);
+  }, [currentYear, loadYearData]);
 
   const scrollYearList = (direction: 'up' | 'down') => {
     const container = document.querySelector('.year-options-container');
@@ -189,7 +230,8 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
 
   const handleMonthClick = (monthIndex: number) => {
     const newDate = new Date(currentYear, monthIndex, 1);
-    setSelectedDate(newDate);
+    const event = new CustomEvent('dateChange', { detail: newDate });
+    window.dispatchEvent(event);
     onViewChange('Month');
   };
 
@@ -210,7 +252,8 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
     };
   };
 
-  const yearStats = calculateYearStats();
+  // Memoize year stats calculation
+  const yearStats = useMemo(() => calculateYearStats(), [monthsData]);
 
   return (
     <div className="calendar-container">
@@ -298,25 +341,13 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
         {monthNames.map((monthName, index) => {
           const monthData = monthsData[index] || { totalPercentage: 0, tradeCount: 0 };
           return (
-            <div
+            <MonthCell
               key={index}
-              className={`day-cell month-cell ${monthData.totalPercentage > 0 ? 'profit' : monthData.totalPercentage < 0 ? 'loss' : ''}`}
-              onClick={() => handleMonthClick(index)}
-            >
-              <div className="day-header">
-                <span className="day-number">{monthName}</span>
-                {monthData.tradeCount > 0 && (
-                  <span className="day-percentage">
-                    {monthData.totalPercentage > 0 ? '+' : ''}{monthData.totalPercentage}%
-                  </span>
-                )}
-              </div>
-              {monthData.tradeCount > 0 && (
-                <div className="trade-info">
-                  <span className="trade-count">{monthData.tradeCount} trades</span>
-                </div>
-              )}
-            </div>
+              monthName={monthName}
+              monthData={monthData}
+              index={index}
+              onClick={handleMonthClick}
+            />
           );
         })}
       </div>

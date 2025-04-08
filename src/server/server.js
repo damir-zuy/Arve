@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';  // Changed from bcrypt to bcryptjs
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -11,6 +11,8 @@ dotenv.config();
 
 const app = express();
 
+const mongoURI = process.env.MONGO_URI;
+
 // Update CORS configuration
 app.use(cors({
     origin: 'http://localhost:5173', // Replace with your frontend URL
@@ -19,8 +21,9 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/arve_db', {
+// MongoDB connection
+mongoose.connect(mongoURI, {
+    serverSelectionTimeoutMS: 5000
 })
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB connection error:', err));
