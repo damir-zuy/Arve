@@ -44,7 +44,6 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
   useEffect(() => {
     if (selectedDate) {
       setViewDate(selectedDate);
-      loadCalendarDays();
     }
   }, [selectedDate]);
 
@@ -97,8 +96,8 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
 
   const generateCalendarDays = async () => {
     try {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1; // Adjust for 1-based months
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth() + 1; // Adjust for 1-based months
       const response = await fetch(
         `http://localhost:5000/api/trades/month/${year}/${month}`,
         {
