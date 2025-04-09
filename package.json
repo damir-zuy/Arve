@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "main": "dist-electron/main.js",
+  "author": "damir-zuy",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
