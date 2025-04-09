@@ -13,7 +13,6 @@ interface YearViewProps {
   setNotificationClass: (className: string) => void;
   currentDate: Date;
   onViewChange: (view: 'Day' | 'Month' | 'Year') => void;
-  setSelectedDate: (date: Date) => void;
 }
 
 interface DayData {
@@ -68,7 +67,7 @@ const MonthCell = React.memo(({ monthName, monthData, index, onClick }: {
   );
 });
 
-function YearView({ setNotification, setNotificationClass, currentDate, onViewChange, setSelectedDate }: YearViewProps) {
+function YearView({ setNotification, setNotificationClass, currentDate, onViewChange }: YearViewProps) {
   const [isYearSelectorOpen, setIsYearSelectorOpen] = useState(false);
   const yearSelectorRef = useRef<HTMLDivElement>(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -182,12 +181,12 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
   }, []);
 
   // Cache monthly data
-  const monthDataCache = useRef(new Map<string, MonthData>());
+  const monthDataCache = useRef(new Map<string, MonthData[]>());
 
   const loadYearData = useCallback(async () => {
     const cachedKey = `${currentYear}`;
     if (monthDataCache.current.has(cachedKey)) {
-      setMonthsData(monthDataCache.current.get(cachedKey)!);
+      setMonthsData(prev => monthDataCache.current.get(cachedKey) || prev);
       return;
     }
 
@@ -196,7 +195,7 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
         generateMonthData(currentYear, month)
       )
     );
-    monthDataCache.current.set(cachedKey, data);
+    monthDataCache.current.set(cachedKey, data as MonthData[]);
     setMonthsData(data);
   }, [currentYear, generateMonthData]);
 

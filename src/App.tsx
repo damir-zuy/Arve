@@ -32,7 +32,6 @@ const AppContent: React.FC = () => {
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [email] = useState('');
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDate, setSelectedDate] = useState(new Date());
 
     useEffect(() => {
         const publicPaths = ['/signin', '/signup'];
@@ -147,7 +146,6 @@ const AppContent: React.FC = () => {
                         setNotification={setNotification}
                         setNotificationClass={setNotificationClass}
                         currentDate={currentDate}
-                        selectedDate={selectedDate}
                         onViewChange={handleViewChange}
                     /> :
                     <Navigate to="/signin" />
@@ -175,7 +173,6 @@ const AppContent: React.FC = () => {
                         setNotification={setNotification}
                         setNotificationClass={setNotificationClass}
                         currentDate={currentDate}
-                        setSelectedDate={setSelectedDate}
                         onViewChange={handleViewChange}
                     /> :
                     <Navigate to="/signin" />

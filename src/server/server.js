@@ -7,12 +7,38 @@ import dotenv from 'dotenv';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from project root
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+// Validate environment variables with detailed error messages
+const requiredEnvVars = {
+    MONGO_URI: 'MongoDB connection string',
+    JWT_SECRET: 'JWT secret key for authentication',
+    PORT: 'Port number for the server'
+};
+
+const missingVars = Object.entries(requiredEnvVars)
+    .filter(([key]) => !process.env[key])
+    .map(([key, desc]) => `${key} (${desc})`);
+
+if (missingVars.length > 0) {
+    console.error('\nMissing required environment variables:');
+    console.error(missingVars.join('\n'));
+    console.error('\nPlease check that:');
+    console.error('1. The .env file exists in the project root directory');
+    console.error(`2. The .env file is located at: ${path.resolve(__dirname, '../../.env')}`);
+    console.error('3. The .env file contains all required variables\n');
+    process.exit(1);
+}
 
 const app = express();
-
 const mongoURI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Update CORS configuration
 app.use(cors({
@@ -22,12 +48,17 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// MongoDB connection
+// Improved MongoDB connection
 mongoose.connect(mongoURI, {
-    serverSelectionTimeoutMS: 5000
+    serverSelectionTimeoutMS: 5000,
+    retryWrites: true,
+    w: 'majority'
 })
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => console.log('MongoDB connected successfully'))
+.catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+});
 
 const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
@@ -61,15 +92,18 @@ const TradeLog = mongoose.model('TradeLog', TradeLogSchema);
 
 app.use(express.json()); // Middleware to parse JSON
 
-const JWT_SECRET = process.env.JWT_SECRET;
-console.log('JWT_SECRET:', JWT_SECRET);
-
 // User Registration
 app.post('/auth/signup', async (req, res) => {
     console.log('Registration request body:', req.body); // Log the request body
     try {
         const { email, password } = req.body;
         
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ message: 'Email already in use' });
+}
+
         // Add validation
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
@@ -394,24 +428,6 @@ app.get('/trade-profits', authenticateToken, async (req, res) => {
     }
 });
 
-// Create __dirname equivalent for ES modules
-const __filename = new URL(import.meta.url).pathname;
-const __dirname = path.dirname(__filename);
-
-// Fix path for Windows
-const normalizePath = (pathString) => {
-    return path.normalize(pathString.replace(/^\/[A-Za-z]:/, ''));
-};
-
-const distPath = normalizePath(path.join(__dirname, '../../dist'));
-
-// Serve static files from the React build
-app.use(express.static(distPath));
-
-// Catch-all route to serve index.html
-app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-});
 
 // Add error handling middleware
 app.use((req, res) => {
