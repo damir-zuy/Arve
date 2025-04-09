@@ -428,8 +428,16 @@ app.get('/trade-profits', authenticateToken, async (req, res) => {
     }
 });
 
+// Move root route before error handling middleware
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'Arve backend is running 🚀',
+        status: 'healthy',
+        version: '1.0.0'
+    });
+});
 
-// Add error handling middleware
+// Error handling middleware should be last
 app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
@@ -438,10 +446,6 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
 });
-
-app.get('/', (req, res) => {
-    res.send('Arve backend is running 🚀');
-  });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
