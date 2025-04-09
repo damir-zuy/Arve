@@ -27,3 +27,13 @@ contextBridge.exposeInMainWorld('api', {
   maximize: () => ipcRenderer.send('maximize'),
   close: () => ipcRenderer.send('close')
 })
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  onUpdateAvailable: (callback: () => void) => 
+    ipcRenderer.on('update_available', callback),
+  onUpdateDownloaded: (callback: () => void) => 
+    ipcRenderer.on('update_downloaded', callback),
+  onUpdateError: (callback: (err: Error) => void) => 
+    ipcRenderer.on('update_error', (_, err) => callback(err)),
+  restartApp: () => ipcRenderer.send('restart_app')
+})

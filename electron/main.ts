@@ -101,6 +101,10 @@ app.whenReady().then(() => {
   autoUpdater.on('update-downloaded', () => {
     win?.webContents.send('update_downloaded')  // Notify renderer about downloaded update
   })
+
+  autoUpdater.on('error', (err) => {
+    win?.webContents.send('update_error', err)  // Notify renderer about update error
+  })
 })
 
 // IPC handler to restart the app and install the update
@@ -108,7 +112,11 @@ ipcMain.on('restart_app', () => {
   autoUpdater.quitAndInstall()  // Restart and install the update
 })
 
-// Set up the feed URL (GitHub releases, adjust accordingly)
+// Configure update settings
+autoUpdater.autoDownload = true
+autoUpdater.autoInstallOnAppQuit = true
+
+// Set up the feed URL for GitHub releases
 autoUpdater.setFeedURL({
   provider: 'github',
   owner: 'damir-zuy',
