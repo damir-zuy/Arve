@@ -42,7 +42,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, email, o
       }
 
       try {
-          const response = await fetch('http://localhost:5000/user', {
+          const response = await fetch('https://arve.onrender.com/user', {
               method: 'GET',
               headers: {
                   'Authorization': `Bearer ${token}`,
@@ -104,7 +104,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, email, o
         return; // Exit early if nothing has changed
     }
 
-    const response = await fetch('http://localhost:5000/user', {
+    const response = await fetch('https://arve.onrender.com/user', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

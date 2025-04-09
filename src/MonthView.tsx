@@ -90,7 +90,7 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
       const year = viewDate.getFullYear();
       const month = viewDate.getMonth() + 1; // Adjust for 1-based months
       const response = await fetch(
-        `http://localhost:5000/api/trades/month/${year}/${month}`,
+        `https://arve.onrender.com/api/trades/month/${year}/${month}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`

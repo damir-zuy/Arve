@@ -139,7 +139,7 @@ const DayView: React.FC<DayViewProps> = ({
             });
 
             try {
-                const response = await fetch(`http://localhost:5000/api/trades/${tradeToUpdate._id}`, {
+                const response = await fetch(`https://arve.onrender.com/api/trades/${tradeToUpdate._id}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -185,7 +185,7 @@ const handleSaveClick = async () => {
   try {
     const method = isEditMode && selectedTradeIndex !== null ? 'PUT' : 'POST';
     const tradeId = isEditMode && selectedTradeIndex !== null ? trades[selectedTradeIndex]._id : '';
-    const url = `http://localhost:5000/api/trades${method === 'PUT' ? `/${tradeId}` : ''}`;
+    const url = `https://arve.onrender.com/api/trades${method === 'PUT' ? `/${tradeId}` : ''}`;
 
     console.log('Sending trade data:', { // Debug log
       pair: pairValue,
@@ -329,7 +329,7 @@ const handleSaveClick = async () => {
 const fetchTrades = useCallback(async () => {
   try {
     const dateString = formatDateForAPI(currentDate);
-    const response = await fetch(`http://localhost:5000/api/trades/${dateString}`, {
+    const response = await fetch(`https://arve.onrender.com/api/trades/${dateString}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -418,7 +418,7 @@ const fetchTrades = useCallback(async () => {
       
       if (tradeToDelete._id) {
         try {
-          const response = await fetch(`http://localhost:5000/api/trades/${tradeToDelete._id}`, {
+          const response = await fetch(`https://arve.onrender.com/api/trades/${tradeToDelete._id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`

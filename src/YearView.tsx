@@ -105,7 +105,7 @@ function YearView({ setNotification, setNotificationClass, currentDate, onViewCh
   const generateMonthData = useCallback(async (year: number, month: number) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/trades/month/${year}/${month + 1}`,
+        `https://arve.onrender.com/api/trades/month/${year}/${month + 1}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
