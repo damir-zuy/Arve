@@ -75,7 +75,12 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
   };
 
   const handleYearChange = (year: number) => {
+    const newDate = new Date(year, viewDate.getMonth(), 1);
+    setViewDate(newDate);
     setCurrentYear(year);
+    onViewChange('Month');
+    const event = new CustomEvent('dateChange', { detail: newDate });
+    window.dispatchEvent(event);
   };
 
   const handleMonthChange = (monthIndex: number) => {
@@ -211,9 +216,16 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
   const getDayClass = (day: DayData) => {
     const baseClass = 'day';
     const monthClass = day.isOtherMonth ? ' other-month' : ' current-month';
+    const today = new Date();
+    const isFutureOtherMonth = day.isOtherMonth && (
+      (day.date <= 20 && viewDate.getMonth() === 11 && day.date <= today.getDate()) || // December to January
+      (day.date > 20 && viewDate.getMonth() === 0 && day.date >= today.getDate()) || // January to December
+      (day.date <= 20 && viewDate.getMonth() < today.getMonth()) || // Future month
+      (viewDate.getFullYear() > today.getFullYear()) // Future year
+    );
     const valueClass = day.percentage > 0 ? ' profit' : (day.percentage < 0 ? ' loss' : ' neutral');
     const todayClass = day.isToday ? ' today' : '';
-    const futureClass = day.isFutureDay ? ' future-day' : '';
+    const futureClass = (day.isFutureDay || isFutureOtherMonth) ? ' future-day' : '';
     return baseClass + valueClass + monthClass + todayClass + futureClass;
   };
 
@@ -276,18 +288,20 @@ function MonthView({ setNotification, setNotificationClass, currentDate, onViewC
   };
 
   const handleDayClick = useCallback((day: DayData) => {
-    if (!day.isFutureDay) {
-      let targetDate;
-      if (day.isOtherMonth) {
-        if (day.date > 20) {
-          targetDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, day.date);
-        } else {
-          targetDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, day.date);
-        }
+    const today = new Date();
+    let targetDate;
+    if (day.isOtherMonth) {
+      if (day.date > 20) {
+        targetDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, day.date);
       } else {
-        targetDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day.date);
+        targetDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, day.date);
       }
-      
+    } else {
+      targetDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day.date);
+    }
+
+    // Check if the target date is in the future
+    if (targetDate <= today) {
       const event = new CustomEvent('dateChange', { detail: targetDate });
       window.dispatchEvent(event);
       setViewDate(targetDate);

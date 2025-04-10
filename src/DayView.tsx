@@ -78,7 +78,7 @@ const DayView: React.FC<DayViewProps> = ({
   const currentYear = currentDate?.getFullYear?.() || new Date().getFullYear();
   const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
 
-  const sessions = ['London', 'New York', 'Asia', 'Franfurt']; // Define available sessions
+  const sessions = ['London', 'New York', 'Asia', 'Frankfurt']; // Define available sessions
 
   const getFormattedDate = (date: Date) => {
     const day = date.getDate().toString().padStart(2, '0');
@@ -768,6 +768,18 @@ const fetchTrades = useCallback(async () => {
           <div>Short: <span className='stat_text'>{trades.filter(t => t.position === 'short').length}</span></div> 
           <div>Win: <span className='stat_text'>{trades.filter(t => !t.result.includes('-')).length}</span></div> 
           <div>Loss: <span className='stat_text'>{trades.filter(t => t.result.includes('-')).length}</span></div> 
+          {/* Add session stats */}
+          {sessions.map(session => {
+            const sessionCount = trades.filter(t => t.session === session).length;
+            if (sessionCount > 0) {
+              return (
+                <div key={session}>
+                  {session}: <span className='stat_text'>{sessionCount}</span>
+                </div>
+              );
+            }
+            return null;
+          })}
         </div>
         <div className="profit-display">
           Profit: <span className='stat_text'>{totalProfit.toFixed(2)}%</span> 

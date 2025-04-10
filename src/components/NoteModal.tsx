@@ -84,7 +84,6 @@ const NoteModal: React.FC<NoteModalProps> = ({ isOpen, onClose, initialNote, onS
   return (
     <div className="note-modal-overlay">
       <div className="note-modal" ref={modalRef}>
-        <button className="close-button" onClick={onClose}><CrossIcon /></button>
         <div className="note-modal-content">
           <textarea
             ref={textareaRef}

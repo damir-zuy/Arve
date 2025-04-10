@@ -331,4 +331,7 @@
       .symbol-suffix{
         color: var(--white);
       }
+      .profit-display{
+        color: #ffffff40;
+      }
 }
