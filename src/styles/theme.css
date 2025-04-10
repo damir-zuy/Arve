@@ -328,4 +328,7 @@
       .save-note-button:hover{
         background-color: #B700FF45;
       }
+      .symbol-suffix{
+        color: var(--white);
+      }
 }
