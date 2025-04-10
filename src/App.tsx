@@ -8,6 +8,7 @@ import SignUp from './pages/Auth/SignUp';
 import SettingsModal from './components/SettingsModal';
 import { NotificationProvider, useNotification } from './NotificationContext';
 import NotificationDisplay from './NotificationDisplay';
+import { UpdateNotification } from './components/UpdateNotification';
 
 import './App.css';
 import './styles/theme.css';
@@ -191,6 +192,7 @@ const AppContent: React.FC = () => {
                 setNotification={setNotification}
                 setNotificationClass={setNotificationClass}
             />
+            <UpdateNotification />
         </>
     );
 };
