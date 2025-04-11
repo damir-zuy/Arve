@@ -15,16 +15,15 @@ import './styles/theme.css';
 
 declare global {
     interface Window {
-        ipcRenderer: {
-            on(channel: string, func: (...args: any[]) => void): void;
-            off(channel: string, func: (...args: any[]) => void): void;
-            send(channel: string, ...args: any[]): void;
-            invoke(channel: string, ...args: any[]): Promise<any>;
+        electronAPI: {
+            onUpdateAvailable(callback: () => void): void;
+            onUpdateDownloaded(callback: () => void): void;
+            onUpdateError(callback: (err: Error) => void): void;
+            restartApp(): void;
         };
     }
 }
 
-const ipcRenderer = window.ipcRenderer;
 
 const AppContent: React.FC = () => {
     const isLoggedIn = !!localStorage.getItem('token');
@@ -44,18 +43,29 @@ const AppContent: React.FC = () => {
     }, [navigate]);
 
     useEffect(() => {
-        if (ipcRenderer) {
-            ipcRenderer.on('update_available', () => {
-                alert('A new update is available. Downloading now...');
-            });
-
-            ipcRenderer.on('update_downloaded', () => {
-                const confirmed = confirm('Update downloaded. Restart now to apply?');
-                if (confirmed) {
-                    ipcRenderer.send('restart_app');
-                }
-            });
-        }
+        const handleUpdateAvailable = () => {
+            alert('A new update is available. Downloading now...');
+        };
+    
+        const handleUpdateDownloaded = () => {
+            const confirmed = confirm('Update downloaded. Restart now to apply?');
+            if (confirmed) {
+                window.electronAPI.restartApp();
+            }
+        };
+    
+        const handleUpdateError = (err: Error) => {
+            console.error('Update error:', err);
+            alert('There was an error during the update process.');
+        };
+    
+        window.electronAPI.onUpdateAvailable(handleUpdateAvailable);
+        window.electronAPI.onUpdateDownloaded(handleUpdateDownloaded);
+        window.electronAPI.onUpdateError(handleUpdateError);
+    
+        return () => {
+            // You could clean up listeners manually if you exposed `off` versions too
+        };
     }, []);
 
     useEffect(() => {
