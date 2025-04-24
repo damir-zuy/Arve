@@ -68,7 +68,6 @@ const SignIn: React.FC<SignInProps> = ({ setNotification, setNotificationClass }
                     <div className="input_auth-container">
                         <div className="lable_forgot-password">
                             <p className='input-label'>Password</p>
-                            <a href='/forgot-password' className='forgot-password'>Forgot password?</a>
                         </div>
                         
                         <div className="password-container">
@@ -80,7 +79,7 @@ const SignIn: React.FC<SignInProps> = ({ setNotification, setNotificationClass }
                                 className='input-field_sign_in'
                             />
                             <span onClick={() => setShowPassword(!showPassword)} className="eye-icon">
-                                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                {showPassword ? <EyeIcon /> : <EyeOffIcon />}
                             </span>
                         </div>
                     </div>

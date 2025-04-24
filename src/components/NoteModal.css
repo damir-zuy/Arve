@@ -4,12 +4,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
   animation: fadeIn 0.2s ease-out;
+  backdrop-filter: blur(2px);
 }
 
 @keyframes fadeIn {
@@ -25,7 +26,7 @@
   background-color: var(--white);
   border-radius: 15px;
   width: 687px;
-  height: 850px;
+  height: 60vh;
   display: flex;
   flex-direction: column;
   animation: slideUp 0.3s ease-out;
@@ -86,9 +87,10 @@
   font-family: 'Chivo Mono', 'Arial', monospace;
   font-size: 14px;
   line-height: 1.5;
-  background-color: white;
+  background-color: white;  
   color: var(--black);
   transition: border-color 0.2s;
+  /* margin-top: 10px; */
 }
 
 .note-modal-content textarea:focus {
@@ -143,9 +145,9 @@
 
 /* Drop area ------------------------------------------------------------ */
 
-.drop-area {
+/* .drop-area {
   font-family: 'Chivo Mono', monospace;
-  border: 2px dashed #E298FF;
+  border: 2px dashed #B700FF50;
   background-color: #B700FF15;
   color: var(--pink);
   font-size: 16px;
@@ -169,22 +171,20 @@
   display: flex;
   flex-wrap: wrap;
   margin-top: 10px;
-  width: 100%; /* Ensure the image preview container takes full width */
-  transition: height 0.3s ease; /* Smooth transition for height */
+  width: 100%;
+  transition: height 0.3s ease;
 }
 
 .image-container {
   position: relative;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  flex: 1 1 auto; /* Allow the image container to grow and shrink */
-  transition: opacity 0.3s ease; /* Smooth transition for opacity */
+  flex: 1 1 auto;
+  transition: opacity 0.3s ease;
 }
 
 .image-preview img {
-  height: 55px; /* Set fixed height */
-  width: 100%; /* Stretch to full width */
-  object-fit: cover; /* Maintain aspect ratio and cover the container */
+  height: 55px;
+  width: 100%;
+  object-fit: cover;
   border-radius: 5px;
   outline: 2px solid #B700FF30;
 }
@@ -198,10 +198,9 @@
   color: var(--white);
   cursor: pointer;
   font-size: 16px;
-  line-height: 1;
   background-color: #B700FF10;
   transition: all 0.2s;
-  padding: 5px 5px;
+  padding: 5px;
   border-radius: 5px;
   display: flex;
   align-items: center;
@@ -218,6 +217,7 @@
   text-decoration: underline;
   font-size: 14px;
   color: #B700FF;
+  cursor: pointer;
 }
 .upload-link:focus-visible{
   outline: none;
@@ -228,6 +228,8 @@
   font-size: 14px;
   line-height: 1;
   color: #B700FF80;
+  background-color: transparent;
+  border: none;
 }
 
 .full-screen-overlay {
@@ -251,7 +253,7 @@
 
 .close-fullscreen-button {
   position: absolute;
-  top: 20px;
+  top: 40px;
   right: 20px;
   background: #B700FF30;
   border: none;
@@ -276,4 +278,4 @@
 .header {
   z-index: 100; /* Set a lower z-index than the full-screen overlay */
   position: relative; /* Ensure it has a positioning context */
-}
+} */

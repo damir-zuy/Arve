@@ -157,6 +157,7 @@
       }
       .trades-table th{
         color: #ffffff80;
+        border-right: 1px solid #ffffff10;
       }
 
       .position-badge.template {
@@ -231,8 +232,7 @@
       /* Modal styles */
 
       .settings-modal{
-        background-color: #55555515;
-        backdrop-filter: blur(30px);
+        background-color: #000;
         border: 2px solid #ffffff15;
       }
       .settings_content{
@@ -313,8 +313,7 @@
         color: var(--red);
       }
       .note-modal{
-        background-color: #55555515;
-        backdrop-filter: blur(50px);
+        background-color: #000;
         border: 2px solid #ffffff15;
       }
       .note-modal-content textarea{

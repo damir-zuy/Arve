@@ -8,7 +8,6 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import axios from 'axios';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -447,16 +446,6 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
 });
-
-
-const SERVER_URL = 'https://arve.onrender.com'; // Replace with your actual server URL
-
-setInterval(() => {
-  axios.get(SERVER_URL)
-    .then(() => console.log('Pinged server successfully'))
-    .catch((err) => console.error('Ping failed:', err.message));
-}, 10000); // 10 seconds
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

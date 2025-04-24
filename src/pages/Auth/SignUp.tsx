@@ -42,7 +42,7 @@ const SignUp: React.FC = () => {
                 const data = await response.json();
                 localStorage.setItem('token', data.token); 
                 localStorage.setItem('email', email);
-                navigate('/');  // This will handle the navigation correctly
+                navigate('/welcome');  // Changed from '/' to '/welcome'
             } else {
                 const errorData = await response.json();
                 setErrorMessage(errorData.message || 'Registration failed');
@@ -70,7 +70,7 @@ const SignUp: React.FC = () => {
                 
                 <form className='signup-form' onSubmit={handleSubmit}> {/* Use the same form class */}
                     <div className="input_auth-container">
-                        <p className='input-label'>Email address</p> {/* Update label */}
+                        <p className='input-label'><span className='lable_req_symb'>*</span>Email address</p> {/* Update label */}
                         <input
                             type="email"
                             value={email}
@@ -80,7 +80,7 @@ const SignUp: React.FC = () => {
                         />
                     </div>
                     <div className="input_auth-container">
-                        <p className='input-label'>Password</p>
+                        <p className='input-label'><span className='lable_req_symb'>*</span>Password</p>
                         <div className="password-container">
                             <input
                                 type={showPassword ? 'text' : 'password'} // Toggle input type

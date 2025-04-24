@@ -1063,9 +1063,7 @@ p {
   max-width: 20vw;
 }
 
-.trades-table td.note-cell:hover {
-  background-color: #B700FF10;
-}
+
 
 .trades-table tr.template-row td.note-cell {
   padding-right: 45px;

@@ -9,6 +9,7 @@ import SettingsModal from './components/SettingsModal';
 import { NotificationProvider, useNotification } from './NotificationContext';
 import NotificationDisplay from './NotificationDisplay';
 import { UpdateNotification } from './components/UpdateNotification';
+import WelcomeScreen from './components/WelcomeScreen';
 
 import './App.css';
 import './styles/theme.css';
@@ -27,6 +28,8 @@ declare global {
 
 const AppContent: React.FC = () => {
     const isLoggedIn = !!localStorage.getItem('token');
+    const [showWelcome, setShowWelcome] = useState(false);
+    const welcomeScreenSeen = localStorage.getItem('welcomeScreenSeen');
     const navigate = useNavigate();
     const { setNotification, setNotificationClass } = useNotification();
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -36,9 +39,13 @@ const AppContent: React.FC = () => {
     useEffect(() => {
         const publicPaths = ['/signin', '/signup'];
         const token = localStorage.getItem('token');
+        const welcomeSeen = localStorage.getItem('welcomeScreenSeen');
         const currentPath = window.location.hash.replace('#', '');
+        
         if (!token && !publicPaths.includes(currentPath)) {
             navigate('/signin');
+        } else if (token && !welcomeSeen) {
+            setShowWelcome(true);
         }
     }, [navigate]);
 
@@ -151,6 +158,10 @@ const AppContent: React.FC = () => {
     return (
         <>
             <NotificationDisplay />
+            <WelcomeScreen 
+                isOpen={showWelcome} 
+                onClose={() => setShowWelcome(false)} 
+            />
             <Routes>
                 <Route path="/" element={isLoggedIn ?
                     <MonthView
@@ -187,6 +198,9 @@ const AppContent: React.FC = () => {
                         onViewChange={handleViewChange}
                     /> :
                     <Navigate to="/signin" />
+                } />
+                <Route path="/welcome" element={
+                    isLoggedIn ? <WelcomeScreen /> : <Navigate to="/signin" />
                 } />
             </Routes>
             <SettingsModal

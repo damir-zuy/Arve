@@ -675,7 +675,7 @@ const fetchTrades = useCallback(async () => {
                     <td>{trade.result}</td>
                     <td>{trade.rr}</td>
                     <td>{trade.risk}</td>
-                    <td className="note-cell" onClick={() => openNoteModal(trade.note, index)}>
+                    <td className="note-cell">
                       {trade.note}
                     </td>
                   </tr>
