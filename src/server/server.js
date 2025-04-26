@@ -42,11 +42,15 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // Update CORS configuration
 app.use(cors({
-    origin: 'http://localhost:5173', // Replace with your frontend URL
+    origin: '*', // Allow requests from any origin
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Add body parsing middleware before routes
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 // Improved MongoDB connection
 mongoose.connect(mongoURI, {
@@ -83,14 +87,19 @@ const TradeLogSchema = new mongoose.Schema({
     result: { type: Number, required: true }, // Store as number
     rr: { type: Number, required: true }, // Store as number
     risk: { type: Number, required: true }, // Store as number
-    note: { type: String, default: '' },
+    note: { type: String, required: false, default: '' }, // Explicitly mark as not required with default empty string
+    images: [{ 
+        filename: String,
+        originalName: String,
+        mimetype: String,
+        size: Number,
+        path: String
+    }],
     timestamp: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', UserSchema);
 const TradeLog = mongoose.model('TradeLog', TradeLogSchema);
-
-app.use(express.json()); // Middleware to parse JSON
 
 // User Registration
 app.post('/auth/signup', async (req, res) => {
@@ -102,7 +111,7 @@ app.post('/auth/signup', async (req, res) => {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(409).json({ message: 'Email already in use' });
-}
+        }
 
         // Add validation
         if (!email || !password) {
@@ -151,57 +160,177 @@ app.get('/protected', authenticateToken, (req, res) => {
     res.json({ message: 'This is a protected route', user: req.user });
 });
 
-
 // Log a Trade
 app.post('/api/trades', authenticateToken, async (req, res) => {
     try {
-        const { pair, date, session, position, result, rr, risk, note } = req.body;
+        console.log('POST /api/trades received:');
+        console.log('Request headers:', req.headers);
+        console.log('Content-Type:', req.headers['content-type']);
+        console.log('Body:', req.body);
         
-        // Validate required fields
-        if (!pair || !date || !session || !position || result === undefined || rr === undefined || risk === undefined) {
+        // Validate required fields with more detailed error reporting
+        const { pair, date, session, position, result, rr, risk, note = '' } = req.body;
+        
+        console.log('Extracted fields:');
+        console.log('pair:', pair);
+        console.log('date:', date);
+        console.log('session:', session);
+        console.log('position:', position);
+        console.log('result:', result);
+        console.log('rr:', rr);
+        console.log('risk:', risk);
+        console.log('note:', note, '(optional)');
+        
+        const missingFields = [];
+        if (!pair) missingFields.push('pair');
+        if (!date) missingFields.push('date');
+        if (!session) missingFields.push('session');
+        if (!position) missingFields.push('position');
+        if (result === undefined) missingFields.push('result');
+        if (rr === undefined) missingFields.push('rr');
+        if (risk === undefined) missingFields.push('risk');
+        // Note is NOT required
+        
+        if (missingFields.length > 0) {
             return res.status(400).json({ 
-                message: 'Missing required fields',
-                received: { pair, date, session, position, result, rr, risk }
+                message: `Missing required fields: ${missingFields.join(', ')}`,
+                received: req.body
             });
         }
 
         const userId = req.user.id;
 
         // Clean and convert the data
-        const cleanResult = parseFloat(result.toString().replace('%', ''));
-        const cleanRr = parseFloat(rr.toString().replace('1:', ''));
-        const cleanRisk = parseFloat(risk.toString().replace('%', ''));
-
-        // Validate numeric values
-        if (isNaN(cleanResult) || isNaN(cleanRr) || isNaN(cleanRisk)) {
-            return res.status(400).json({ 
-                message: 'Invalid numeric values',
+        let cleanResult, cleanRr, cleanRisk;
+        
+        try {
+            cleanResult = parseFloat(result.toString().replace('%', ''));
+            cleanRr = parseFloat(rr.toString().replace('1:', ''));
+            cleanRisk = parseFloat(risk.toString().replace('%', ''));
+            
+            // Validate numeric values
+            if (isNaN(cleanResult) || isNaN(cleanRr) || isNaN(cleanRisk)) {
+                return res.status(400).json({ 
+                    message: 'Invalid numeric values',
+                    received: { result, rr, risk }
+                });
+            }
+        } catch (err) {
+            return res.status(400).json({
+                message: 'Error parsing numeric values',
+                error: err.message,
                 received: { result, rr, risk }
             });
         }
 
         const tradeLog = new TradeLog({
             userId,
-            pair: pair.trim(), // Ensure pair is trimmed
+            pair: pair.trim(),
             date: new Date(date),
             session,
             position,
             result: cleanResult,
             rr: cleanRr,
             risk: cleanRisk,
-            note: note || ''
+            note: note,
+            images: [] // Initialize with empty images array
         });
 
-        console.log('Attempting to save trade:', tradeLog); // Debug log
+        console.log('Trade object created:', {
+            userId,
+            pair: pair.trim(),
+            date: new Date(date),
+            session,
+            position,
+            result: cleanResult,
+            rr: cleanRr,
+            risk: cleanRisk,
+            note: note
+        });
 
         const savedTrade = await tradeLog.save();
+        console.log('Trade saved successfully with ID:', savedTrade._id);
         res.status(201).json(savedTrade);
     } catch (error) {
         console.error('Error saving trade log:', error);
         res.status(400).json({
             message: 'Failed to log trade',
             error: error.message,
-            details: error.errors // Include mongoose validation errors if any
+            details: error.errors || 'No additional details'
+        });
+    }
+});
+
+// New route for uploading images to an existing trade
+app.post('/api/trades/:id/images', authenticateToken, upload.array('images', 5), async (req, res) => {
+    try {
+        const tradeId = req.params.id;
+        const userId = req.user.id;
+        
+        console.log(`POST /api/trades/${tradeId}/images received`);
+        console.log('Files:', req.files ? `${req.files.length} files` : 'none');
+        
+        // Find the trade to ensure it exists and belongs to the user
+        const trade = await TradeLog.findOne({ _id: tradeId, userId: userId });
+        
+        if (!trade) {
+            return res.status(404).json({ message: 'Trade not found or you do not have permission to modify it' });
+        }
+        
+        // Process uploaded images
+        const uploadedImages = [];
+        if (req.files && req.files.length > 0) {
+            // Create directory for images if it doesn't exist
+            const imageDir = path.join(__dirname, '../../uploads');
+            if (!fs.existsSync(imageDir)) {
+                fs.mkdirSync(imageDir, { recursive: true });
+            }
+            
+            console.log(`Processing ${req.files.length} uploaded images`);
+            
+            // Save images and create records
+            for (const file of req.files) {
+                try {
+                    const fileExt = path.extname(file.originalname);
+                    const newFilename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExt}`;
+                    const filePath = path.join(imageDir, newFilename);
+                    
+                    console.log(`Saving image: ${file.originalname} -> ${newFilename}`);
+                    
+                    // Write the file from buffer to disk
+                    fs.writeFileSync(filePath, file.buffer);
+                    
+                    uploadedImages.push({
+                        filename: newFilename,
+                        originalName: file.originalname,
+                        mimetype: file.mimetype,
+                        size: file.size,
+                        path: `/uploads/${newFilename}`
+                    });
+                } catch (fileErr) {
+                    console.error('Error processing file:', fileErr);
+                    // Continue with other files even if one fails
+                }
+            }
+            
+            // Add the new images to the trade's existing images
+            trade.images = [...(trade.images || []), ...uploadedImages];
+            await trade.save();
+            
+            console.log(`Added ${uploadedImages.length} images to trade ID: ${tradeId}`);
+            res.status(200).json({ 
+                message: 'Images uploaded successfully',
+                imageCount: uploadedImages.length,
+                images: uploadedImages
+            });
+        } else {
+            res.status(400).json({ message: 'No images were provided' });
+        }
+    } catch (error) {
+        console.error('Error uploading images:', error);
+        res.status(500).json({
+            message: 'Failed to upload images',
+            error: error.message
         });
     }
 });
@@ -236,7 +365,6 @@ app.get('/api/trades', authenticateToken, async (req, res) => {
     }
 });
 
-
 // Fetch Trades for a Specific Day using path parameter
 app.get('/api/trades/:date', authenticateToken, async (req, res) => {
     try {
@@ -264,7 +392,8 @@ app.get('/api/trades/:date', authenticateToken, async (req, res) => {
             result: trade.result, // Client will format with %
             rr: trade.rr, // Client will format as 1:X
             risk: trade.risk, // Client will format with %
-            note: trade.note || ''
+            note: trade.note || '',
+            images: trade.images || [] // IMPORTANT: Ensure images are included
         }));
 
         res.json(formattedTrades);
@@ -274,22 +403,79 @@ app.get('/api/trades/:date', authenticateToken, async (req, res) => {
     }
 });
 
-
 // update trade (editing)
 app.put('/api/trades/:id', authenticateToken, async (req, res) => {
     try {
         const tradeId = req.params.id;
         const userId = req.user.id;
+        
+        console.log('PUT /api/trades/:id received:');
+        console.log('Trade ID:', tradeId);
+        console.log('User ID:', userId);
+        console.log('Body:', req.body);
+        
+        // Handle the updates - Parse from JSON body
+        const { pair, date, session, position, result, rr, risk, note = '' } = req.body;
+        
+        // Validate required fields
+        const missingFields = [];
+        if (!pair) missingFields.push('pair');
+        if (!date) missingFields.push('date');
+        if (!session) missingFields.push('session');
+        if (!position) missingFields.push('position');
+        if (result === undefined) missingFields.push('result');
+        if (rr === undefined) missingFields.push('rr');
+        if (risk === undefined) missingFields.push('risk');
+        // Note is NOT required
+        
+        if (missingFields.length > 0) {
+            return res.status(400).json({ 
+                message: `Missing required fields: ${missingFields.join(', ')}`,
+                received: req.body
+            });
+        }
+        
+        // Clean and convert numeric values
+        let cleanResult, cleanRr, cleanRisk;
+        try {
+            // Make sure we're working with strings before using replace
+            const resultStr = String(result);
+            const rrStr = String(rr);
+            const riskStr = String(risk);
+            
+            cleanResult = parseFloat(resultStr.replace('%', ''));
+            cleanRr = parseFloat(rrStr.replace('1:', ''));
+            cleanRisk = parseFloat(riskStr.replace('%', ''));
+            
+            // Validate numeric values
+            if (isNaN(cleanResult) || isNaN(cleanRr) || isNaN(cleanRisk)) {
+                return res.status(400).json({ 
+                    message: 'Invalid numeric values',
+                    received: { result, rr, risk }
+                });
+            }
+        } catch (err) {
+            console.error('Error parsing numeric values:', err);
+            return res.status(400).json({
+                message: 'Error parsing numeric values',
+                error: err.message,
+                received: { result, rr, risk }
+            });
+        }
+        
+        // Prepare update object
         const updates = {
-            pair: req.body.pair,  // Changed from asset to pair
-            date: new Date(req.body.date),
-            session: req.body.session,
-            position: req.body.position,
-            result: parseFloat(req.body.result),
-            rr: parseFloat(req.body.rr),
-            risk: parseFloat(req.body.risk),
-            note: req.body.note || ''
+            pair: pair.trim(),
+            date: new Date(date),
+            session,
+            position,
+            result: cleanResult,
+            rr: cleanRr,
+            risk: cleanRisk,
+            note // Use the note as-is, which might be empty
         };
+
+        console.log('Updates prepared:', updates);
 
         const trade = await TradeLog.findOneAndUpdate(
             { _id: tradeId, userId },
@@ -298,13 +484,18 @@ app.put('/api/trades/:id', authenticateToken, async (req, res) => {
         );
 
         if (!trade) {
-            return res.status(404).json({ message: 'Trade not found' });
+            return res.status(404).json({ message: 'Trade not found or you do not have permission to update it' });
         }
 
+        console.log('Trade updated successfully with ID:', trade._id);
         res.json(trade);
     } catch (error) {
         console.error('Error updating trade:', error);
-        res.status(500).json({ message: 'Failed to update trade', error: error.message });
+        res.status(500).json({ 
+            message: 'Failed to update trade', 
+            error: error.message,
+            details: error.errors || 'No additional details'
+        });
     }
 });
 
@@ -326,7 +517,6 @@ app.delete('/api/trades/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Failed to delete trade', error: error.message });
     }
 });
-
 
 // Fetch Trades for a Specific Month
 app.get('/api/trades/month/:year/:month', authenticateToken, async (req, res) => {
@@ -435,6 +625,92 @@ app.get('/', (req, res) => {
         status: 'healthy',
         version: '1.0.0'
     });
+});
+
+// Add route to serve uploaded images
+app.get('/uploads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, '../../uploads', filename);
+    
+    console.log(`Serving image: ${filename} from path: ${filePath}`);
+    
+    // Check if file exists
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        console.error(`Image file not found: ${filePath}`);
+        res.status(404).send('Image not found');
+    }
+});
+
+// Add this before the 404 handler
+app.get('/api/test', (req, res) => {
+  res.json({ status: 'working' });
+});
+
+// Add this new DELETE endpoint for removing images from a trade
+app.delete('/api/trades/:id/images', authenticateToken, async (req, res) => {
+  try {
+    const tradeId = req.params.id;
+    const userId = req.user.id;
+    const { filenames } = req.body;
+    
+    console.log(`DELETE request for images from trade ${tradeId}`);
+    console.log('Filenames to delete:', filenames);
+    
+    if (!filenames || !Array.isArray(filenames) || filenames.length === 0) {
+      return res.status(400).json({ message: 'No valid filenames provided for deletion' });
+    }
+    
+    // First find the trade to ensure it exists and belongs to the user
+    const trade = await TradeLog.findOne({ _id: tradeId, userId: userId });
+    
+    if (!trade) {
+      return res.status(404).json({ message: 'Trade not found or you do not have permission to modify it' });
+    }
+    
+    // Filter out the images to be deleted
+    const imageDir = path.join(__dirname, '../../uploads');
+    const updatedImages = trade.images.filter(img => {
+      // Check if this image is in the deletion list
+      const shouldDelete = filenames.includes(img.filename);
+      
+      // If it should be deleted, remove the file from disk
+      if (shouldDelete) {
+        try {
+          const imagePath = path.join(imageDir, img.filename);
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+            console.log(`Deleted image file: ${img.filename}`);
+          } else {
+            console.warn(`Image file not found on disk: ${img.filename}`);
+          }
+        } catch (err) {
+          console.error(`Error deleting image file ${img.filename}:`, err);
+          // Continue even if file deletion fails
+        }
+      }
+      
+      // Keep the image if it's not in the deletion list
+      return !shouldDelete;
+    });
+    
+    // Update the trade with the new image list
+    trade.images = updatedImages;
+    await trade.save();
+    
+    res.status(200).json({ 
+      message: 'Images deleted successfully',
+      deletedCount: trade.images.length - updatedImages.length
+    });
+    
+  } catch (error) {
+    console.error('Error deleting images:', error);
+    res.status(500).json({
+      message: 'Failed to delete images',
+      error: error.message
+    });
+  }
 });
 
 // Error handling middleware should be last

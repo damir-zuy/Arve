@@ -25,11 +25,9 @@ declare global {
     }
 }
 
-
 const AppContent: React.FC = () => {
     const isLoggedIn = !!localStorage.getItem('token');
-    const [showWelcome, setShowWelcome] = useState(false);
-    const welcomeScreenSeen = localStorage.getItem('welcomeScreenSeen');
+    const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(true);
     const navigate = useNavigate();
     const { setNotification, setNotificationClass } = useNotification();
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -39,13 +37,10 @@ const AppContent: React.FC = () => {
     useEffect(() => {
         const publicPaths = ['/signin', '/signup'];
         const token = localStorage.getItem('token');
-        const welcomeSeen = localStorage.getItem('welcomeScreenSeen');
         const currentPath = window.location.hash.replace('#', '');
         
         if (!token && !publicPaths.includes(currentPath)) {
             navigate('/signin');
-        } else if (token && !welcomeSeen) {
-            setShowWelcome(true);
         }
     }, [navigate]);
 
@@ -155,12 +150,17 @@ const AppContent: React.FC = () => {
         }
     };
 
+    const handleCloseWelcomeScreen = () => {
+        setIsWelcomeModalOpen(false);
+        localStorage.setItem('welcomeScreenSeen', 'true');
+    };
+
     return (
         <>
             <NotificationDisplay />
             <WelcomeScreen 
-                isOpen={showWelcome} 
-                onClose={() => setShowWelcome(false)} 
+                isOpen={isWelcomeModalOpen} 
+                onClose={handleCloseWelcomeScreen} 
             />
             <Routes>
                 <Route path="/" element={isLoggedIn ?
